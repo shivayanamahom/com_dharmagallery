@@ -23,10 +23,78 @@ final class StorageService
         return $directory;
     }
 
+    /** Запрещаем исполнение серверных скриптов в настраиваемой папке загрузок. */
+    public static function protectDirectory(string $directory): void
+    {
+        $directory = self::directory($directory);
+        $root = realpath(JPATH_ROOT . '/images');
+        if (!$root) {
+            throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_DIRECTORY');
+        }
+
+        $cursor = $root;
+        foreach (array_slice(explode('/', $directory), 1) as $segment) {
+            $next = $cursor . '/' . $segment;
+            if (is_link($next)) {
+                throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_DIRECTORY');
+            }
+            if (!is_dir($next) && !Folder::create($next)) {
+                throw new \RuntimeException('COM_DHARMAGALLERY_UPLOAD_FAILED');
+            }
+            $real = realpath($next);
+            if (!$real || !str_starts_with($real, $root . DIRECTORY_SEPARATOR)) {
+                throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_DIRECTORY');
+            }
+            $cursor = $real;
+        }
+
+        $file = $cursor . '/.htaccess';
+        if (is_link($file)) {
+            throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_DIRECTORY');
+        }
+        $start = '# BEGIN Dharma Gallery upload protection';
+        $end = '# END Dharma Gallery upload protection';
+        $rules = <<<HTACCESS
+{$start}
+<IfModule mod_authz_core.c>
+    <FilesMatch "(?i)\.(?:php[0-9]*|phtml|phar|cgi|pl|py|sh|shtml|asp|aspx|jsp)(?:\.|$)">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+{$end}
+HTACCESS;
+
+        $contents = is_file($file) ? file_get_contents($file) : '';
+        if ($contents === false) {
+            throw new \RuntimeException('COM_DHARMAGALLERY_UPLOAD_FAILED');
+        }
+        $originalContents = $contents;
+        $startAt = strpos($contents, $start);
+        if ($startAt !== false) {
+            $endAt = strpos($contents, $end, $startAt + strlen($start));
+            if ($endAt === false) {
+                throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_DIRECTORY');
+            }
+            $contents = substr($contents, 0, $startAt) . $rules . substr($contents, $endAt + strlen($end));
+        } else {
+            $contents = rtrim($contents) . ($contents !== '' ? "\n\n" : '') . $rules . "\n";
+        }
+
+        if ($contents === $originalContents) {
+            return;
+        }
+
+        if (file_put_contents($file, $contents, LOCK_EX) === false) {
+            throw new \RuntimeException('COM_DHARMAGALLERY_UPLOAD_FAILED');
+        }
+    }
+
     public static function albumDirectory(int $albumId): string
     {
         if ($albumId <= 0) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_ALBUM'); }
-        $relative = self::directory((string) ComponentHelper::getParams('com_dharmagallery')->get('upload_directory', 'images/dharmagallery')) . '/' . $albumId;
+        $uploadDirectory = self::directory((string) ComponentHelper::getParams('com_dharmagallery')->get('upload_directory', 'images/dharmagallery'));
+        self::protectDirectory($uploadDirectory);
+        $relative = $uploadDirectory . '/' . $albumId;
         $root = realpath(JPATH_ROOT . '/images');
         if (!$root) { throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_DIRECTORY'); }
         $cursor = $root;

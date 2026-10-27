@@ -1,9 +1,11 @@
 <?php
 defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Installer\InstallerScript;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseInterface;
+use Dharma\Component\Gallery\Administrator\Service\StorageService;
 final class Com_DharmagalleryInstallerScript extends InstallerScript
 {
     protected $minimumPhp = '8.3.0';
@@ -33,6 +35,8 @@ final class Com_DharmagalleryInstallerScript extends InstallerScript
             '/components/com_dharmagallery/tmpl/category',
         ];
         $this->removeFiles();
+        $uploadDirectory = (string) ComponentHelper::getParams('com_dharmagallery')->get('upload_directory', 'images/dharmagallery');
+        StorageService::protectDirectory($uploadDirectory);
         $db = Factory::getContainer()->get(DatabaseInterface::class);
         $columns = $db->getTableColumns('#__dharmagallery_albums');
         if (!isset($columns['introtext'])) { $db->setQuery('ALTER TABLE #__dharmagallery_albums ADD COLUMN introtext MEDIUMTEXT NULL')->execute(); }
