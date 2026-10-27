@@ -34,7 +34,14 @@ class AlbumModel extends RecordModel
         if (!$form) { return false; }
         $item = $this->getItem();
         // Сохранённый тип берётся из БД, а не из запроса или пользовательского состояния формы.
-        if (!empty($item->id)) { $form->setFieldAttribute('mode', 'disabled', 'true'); $form->setValue('mode', null, $item->mode); }
+        if (!empty($item->id)) {
+            // Для закреплённого типа используем штатный readonly-список:
+            // он показывает выбранное значение без инициализации Choices.
+            $form->setFieldAttribute('mode', 'layout', 'joomla.form.field.list');
+            $form->setFieldAttribute('mode', 'readonly', 'true');
+            $form->setFieldAttribute('mode', 'disabled', 'false');
+            $form->setValue('mode', null, $item->mode);
+        }
         $mode = !empty($item->id) ? $item->mode : (is_array($data) ? ($data['mode'] ?? 'gallery') : 'gallery');
         if (!empty($item->id)) {
             $wrong = $mode === 'gallery' ? ['files_layout', 'show_size', 'show_extension', 'download'] : ['columns', 'image_mode', 'show_title', 'lightbox'];
