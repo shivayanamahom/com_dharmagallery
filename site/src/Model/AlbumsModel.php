@@ -10,7 +10,8 @@ class AlbumsModel extends ListModel
  protected $option='com_dharmagallery';
  protected function populateState($ordering=null,$direction=null) {
   $app=Factory::getApplication(); $menu=$app->getMenu()->getActive();
-  $this->setState('filter.parent_id',$app->getInput()->getInt('parent_id',(int)($menu?->getParams()->get('parent_id',0)??0)));
+  $menuParent=$menu && ($menu->query['option']??'')==='com_dharmagallery' ? GalleryHelper::menuParentId($menu) : 0;
+  $this->setState('filter.parent_id',$app->getInput()->getInt('parent_id',$menuParent));
   $limit=max(1,min(100,(int)ComponentHelper::getParams('com_dharmagallery')->get('albums_per_page',12)));
   $this->setState('list.limit',$limit); $this->setState('list.start',max(0,(int)(floor($app->getInput()->getInt('limitstart',0)/$limit)*$limit)));
  }

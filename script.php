@@ -34,6 +34,8 @@ final class Com_DharmagalleryInstallerScript extends InstallerScript
         ];
         $this->removeFiles();
         $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $columns = $db->getTableColumns('#__dharmagallery_albums');
+        if (!isset($columns['introtext'])) { $db->setQuery('ALTER TABLE #__dharmagallery_albums ADD COLUMN introtext MEDIUMTEXT NULL')->execute(); }
         // В промежуточной сборке файлы могли не иметь альбома. Сохраняем их в отдельном неопубликованном альбоме.
         $orphans = (int) $db->setQuery('SELECT COUNT(*) FROM #__dharmagallery_photos p LEFT JOIN #__dharmagallery_albums a ON a.id=p.album_id WHERE a.id IS NULL')->loadResult();
         if ($orphans) {

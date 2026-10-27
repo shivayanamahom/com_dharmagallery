@@ -1,0 +1,1 @@
+-- introtext is added idempotently by script.php postflight; live working sites may already have this column.

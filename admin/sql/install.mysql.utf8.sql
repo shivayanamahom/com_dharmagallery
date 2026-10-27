@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS `#__dharmagallery_albums` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `parent_id` INT UNSIGNED NOT NULL DEFAULT 0,
     `title` VARCHAR(255) NOT NULL DEFAULT '',
+    `introtext` MEDIUMTEXT NULL,
     `description` MEDIUMTEXT NULL,
     `params` MEDIUMTEXT NULL,
     `alias` VARCHAR(255) NOT NULL DEFAULT '',

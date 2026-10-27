@@ -26,7 +26,7 @@ foreach (['UPLOADING', 'UPLOAD_DONE', 'UPLOAD_FAILED', 'SAVE_CONTENTS', 'TOO_MAN
   <div class="main-card">
    <?php echo HTMLHelper::_('uitab.startTabSet', 'galleryTabs', ['active' => 'details', 'recall' => true, 'breakpoint' => 768]); ?>
    <?php echo HTMLHelper::_('uitab.addTab', 'galleryTabs', 'details', Text::_('JDETAILS')); ?>
-   <?php echo $this->form->renderField('description'); ?>
+   <?php echo $this->form->renderField('introtext'); echo $this->form->renderField('description'); ?>
    <?php echo HTMLHelper::_('uitab.endTab'); ?>
    <?php echo HTMLHelper::_('uitab.addTab', 'galleryTabs', 'contents', Text::_($id && $mode === 'files' ? 'COM_DHARMAGALLERY_MODE_FILES' : 'COM_DHARMAGALLERY_CONTENTS')); ?>
    <?php if (!$id): ?>

@@ -29,7 +29,64 @@ final class GalleryHelper
   return true;
  }
  public static function layout(string $name,array $data): string { return LayoutHelper::render($name,$data,null,['component'=>'com_dharmagallery']); }
- public static function route(string $view,int $id=0): string { return Route::_('index.php?option=com_dharmagallery&view='.$view.($id?'&id='.$id:'')); }
+
+ /** Пункты меню именно галереи, доступные текущему посетителю. */
+ private static function menuItems(): array
+ {
+     $app = Factory::getApplication();
+     $levels = $app->getIdentity()->getAuthorisedViewLevels();
+     return array_values(array_filter($app->getMenu()->getMenu(), static function ($item) use ($levels, $app): bool {
+         if (($item->query['option'] ?? '') !== 'com_dharmagallery' || !in_array((int) $item->access, $levels, true)) { return false; }
+         return !Multilanguage::isEnabled() || in_array($item->language, ['*', $app->getLanguage()->getTag()], true);
+     }));
+ }
+ public static function menuAlbumId(object $item): int
+ {
+     return (int) ($item->query['id'] ?? $item->getParams()->get('album_id', 0));
+ }
+ public static function menuParentId(object $item): int
+ {
+     return (int) ($item->query['parent_id'] ?? $item->getParams()->get('parent_id', 0));
+ }
+ public static function route(string $view, int $id = 0): string
+ {
+     $activeId = (int) (Factory::getApplication()->getMenu()->getActive()->id ?? 0);
+     $menus = self::menuItems();
+     usort($menus, static fn($a, $b) => ((int) $b->id === $activeId) <=> ((int) $a->id === $activeId));
+     foreach ($menus as $item) {
+         if (($item->query['view'] ?? '') === $view &&
+             (($view === 'album' && self::menuAlbumId($item) === $id) || ($view === 'albums' && self::menuParentId($item) === 0))) {
+             return Route::_('index.php?Itemid=' . (int) $item->id);
+         }
+     }
+     $itemid = 0;
+     if ($view === 'album' && $id > 0) {
+         $parents = self::albums(); $parent = (int) ($parents[$id]->parent_id ?? 0); $seen = [];
+         while (!isset($seen[$parent])) {
+             $seen[$parent] = true;
+             foreach ($menus as $item) {
+                 if (($item->query['view'] ?? '') === 'albums' && self::menuParentId($item) === $parent) { $itemid = (int) $item->id; break 2; }
+             }
+             if ($parent === 0 || !isset($parents[$parent])) { break; }
+             $parent = (int) $parents[$parent]->parent_id;
+         }
+     }
+     // Itemid=0 не даёт Joomla подставлять случайный активный список для другой ветки.
+     return Route::_('index.php?option=com_dharmagallery&view=' . $view . ($id ? '&id=' . $id : '') . '&Itemid=' . $itemid);
+ }
+ public static function backRoute(object $album): string
+ {
+     $parent = (int) $album->parent_id;
+     $activeId = (int) (Factory::getApplication()->getMenu()->getActive()->id ?? 0);
+     $menus = self::menuItems();
+     usort($menus, static fn($a, $b) => ((int) $b->id === $activeId) <=> ((int) $a->id === $activeId));
+     foreach ($menus as $item) {
+         if (($item->query['view'] ?? '') === 'albums' && self::menuParentId($item) === $parent) {
+             return Route::_('index.php?Itemid=' . (int) $item->id);
+         }
+     }
+     return self::route($parent ? 'album' : 'albums', $parent);
+ }
  public static function columns($params): int { $v=(int)($params['columns']??0); return in_array($v,[2,3,4,6],true)?$v:(int)ComponentHelper::getParams('com_dharmagallery')->get('columns',3); }
 
 

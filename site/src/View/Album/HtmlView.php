@@ -17,12 +17,18 @@ class HtmlView extends BaseHtmlView
   $model=$factory->createModel('Items','Site',['ignore_request'=>false]); $model->getState(); $model->setState('filter.album_id',$id);
   $this->items=$model->getItems(); $this->pagination=$model->getPagination();
   $children=$factory->createModel('Albums','Site',['ignore_request'=>true]); $children->setState('filter.parent_id',$id); $children->setState('list.limit',0); $this->children=$children->getItems();
-  foreach ($this->getModel()->getBreadcrumbs($id) as $crumb) { if ((int)$crumb->id!==$id) { $app->getPathway()->addItem($crumb->title,H::route('album',(int)$crumb->id)); } }
+  $menuRoot = $menu && ($menu->query['option'] ?? '') === 'com_dharmagallery'
+      ? (($menu->query['view'] ?? '') === 'albums' ? H::menuParentId($menu) : H::menuAlbumId($menu)) : 0;
+  foreach ($this->getModel()->getBreadcrumbs($id) as $crumb) {
+      if ((int) $crumb->id !== $id && (int) $crumb->id !== $menuRoot) {
+          $app->getPathway()->addItem($crumb->title, H::route('album', (int) $crumb->id));
+      }
+  }
   $this->pageHeading=$this->album->title; $this->getDocument()->setDescription($this->album->metadesc??'');
 
   $sameMenu=$menu && ($menu->query['option']??'')==='com_dharmagallery' && ($menu->query['view']??'')==='album' && (!(int)$input->getInt('id') || (int)($menu->query['id']??0)===$input->getInt('id'));
   if ($sameMenu) { $this->pageHeading=$menuParams->get('page_heading',$this->pageHeading); }
-  $app->getPathway()->addItem($this->pageHeading);
+  if (!$sameMenu) { $app->getPathway()->addItem($this->pageHeading); }
   $this->getDocument()->setTitle($sameMenu?$menuParams->get('page_title',$this->pageHeading):$this->pageHeading);
   H::assets($this->getDocument(),$this->params['mode']==='gallery' && (int)($this->params['lightbox']??1)===1 && count($this->items)>0);
   return parent::display($tpl);

@@ -4,7 +4,8 @@
   <field name="id" type="hidden" />
   <field name="title" type="text" label="JGLOBAL_TITLE" required="true" maxlength="255" />
   <field name="alias" type="text" label="JFIELD_ALIAS_LABEL" maxlength="255" />
-  <field name="description" type="editor" label="JGLOBAL_DESCRIPTION" filter="Joomla\CMS\Component\ComponentHelper::filterText" buttons="true" />
+  <field name="introtext" type="editor" label="COM_DHARMAGALLERY_INTROTEXT" description="COM_DHARMAGALLERY_INTROTEXT_DESC" filter="Joomla\CMS\Component\ComponentHelper::filterText" buttons="true" />
+  <field name="description" type="editor" label="COM_DHARMAGALLERY_FULLTEXT" description="COM_DHARMAGALLERY_FULLTEXT_DESC" filter="Joomla\CMS\Component\ComponentHelper::filterText" buttons="true" />
  </fieldset>
  <fieldset name="sidebar">
   <field name="mode" type="list" label="COM_DHARMAGALLERY_MODE" description="COM_DHARMAGALLERY_MODE_DESC" default="gallery" layout="joomla.form.field.list-fancy-select"><option value="gallery">COM_DHARMAGALLERY_MODE_GALLERY</option><option value="files">COM_DHARMAGALLERY_MODE_FILES</option></field>
