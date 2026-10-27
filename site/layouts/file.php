@@ -3,7 +3,7 @@ defined('_JEXEC') or die;
 use Dharma\Component\Gallery\Site\Helper\GalleryHelper as H;
 use Dharma\Component\Gallery\Administrator\Helper\MediaHelper as M;
 use Joomla\CMS\Language\Text;
-$item = $displayData['item']; $params = $displayData['params'];
+$item = $displayData['item']; $params = H::settings($displayData['params']);
 $media = H::media($item, false); if (!$media) { return; }
 $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 $download = (int) ($params['download'] ?? 1) === 1;

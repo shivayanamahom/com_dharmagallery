@@ -35,6 +35,19 @@
       "type": "style",
       "uri": "com_dharmagallery/admin.css",
       "version": "2.0.4"
+    },
+    {
+      "name": "com_dharmagallery.fancybox",
+      "type": "script",
+      "uri": "com_dharmagallery/fancybox.js",
+      "dependencies": [
+        "core",
+        "wtfancyboxscript"
+      ],
+      "attributes": {
+        "defer": true
+      },
+      "version": "2.0.4-20261027-fancybox"
     }
   ]
 }

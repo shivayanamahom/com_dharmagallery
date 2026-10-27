@@ -1,14 +1,16 @@
 <?php
 defined('_JEXEC') or die;
 use Dharma\Component\Gallery\Site\Helper\GalleryHelper as H;
-$item = $displayData['item']; $params = $displayData['params'];
+$item = $displayData['item']; $params = H::settings($displayData['params']);
+$viewer = $params['lightbox'] ? ($params['viewer'] ?? 'bootstrap') : 'none';
+$group = 'dharmagallery-' . (int) ($params['album_id'] ?? $item->album_id);
 $media = H::media($item); if (!$media || $item->type !== 'image') { return; }
 $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
 $crop = ($params['image_mode'] ?? 'natural') === 'cover';
 $showTitle = H::showPhotoTitles($params);
 ?>
 <figure class="card h-100 mb-0">
- <a href="<?php echo $e($media['url']); ?>"<?php if ((int) ($params['lightbox'] ?? 1) === 1): ?> data-dg-image data-title="<?php echo $showTitle ? $e($item->title) : ''; ?>"<?php endif; ?> class="d-block<?php echo $crop ? ' ratio ratio-4x3' : ''; ?>">
+ <a href="<?php echo $e($media['url']); ?>"<?php if ($viewer === 'fancybox'): ?> data-dg-fancybox data-fancybox="<?php echo $e($group); ?>"<?php if ($showTitle): ?> data-caption="<?php echo $e($e($item->title)); ?>"<?php endif; ?><?php elseif ($viewer === 'bootstrap'): ?> data-dg-image data-title="<?php echo $showTitle ? $e($item->title) : ''; ?>"<?php endif; ?> class="d-block<?php echo $crop ? ' ratio ratio-4x3' : ''; ?>">
   <img src="<?php echo $e($media['thumb']); ?>" alt="<?php echo $e($item->alt); ?>" width="<?php echo (int) $media['width']; ?>" height="<?php echo (int) $media['height']; ?>" loading="lazy" decoding="async" class="img-fluid w-100<?php echo $crop ? ' h-100 object-fit-cover' : ''; ?>">
  </a>
  <?php if ($showTitle || $item->description): ?><figcaption class="card-body">

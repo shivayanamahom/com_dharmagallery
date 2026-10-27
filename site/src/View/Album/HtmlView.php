@@ -13,7 +13,8 @@ class HtmlView extends BaseHtmlView
   
   $id=$input->getInt('id',(int)($menuParams?->get('album_id',0)??0)); $this->album=$this->getModel()->getAlbum($id);
   if (!$this->album) { throw new \RuntimeException(Text::_('COM_DHARMAGALLERY_NOT_FOUND'),404); }
-  $this->params=json_decode($this->album->params?:'{}',true)?:[]; $this->params['mode']=$this->album->mode ?? 'gallery';
+  $this->params=H::settings(json_decode($this->album->params?:'{}',true)?:[]); $this->params['mode']=$this->album->mode ?? 'gallery'; $this->params['album_id']=$id;
+  $this->params['viewer']=H::viewer($this->params,$this->getDocument());
   $model=$factory->createModel('Items','Site',['ignore_request'=>false]); $model->getState(); $model->setState('filter.album_id',$id);
   $this->items=$model->getItems(); $this->pagination=$model->getPagination();
   $children=$factory->createModel('Albums','Site',['ignore_request'=>true]); $children->setState('filter.parent_id',$id); $children->setState('list.limit',0); $this->children=$children->getItems();
@@ -30,7 +31,7 @@ class HtmlView extends BaseHtmlView
   if ($sameMenu) { $this->pageHeading=$menuParams->get('page_heading',$this->pageHeading); }
   if (!$sameMenu) { $app->getPathway()->addItem($this->pageHeading); }
   $this->getDocument()->setTitle($sameMenu?$menuParams->get('page_title',$this->pageHeading):$this->pageHeading);
-  H::assets($this->getDocument(),$this->params['mode']==='gallery' && (int)($this->params['lightbox']??1)===1 && count($this->items)>0);
+  H::assets($this->getDocument(),$this->params['viewer']!=='none' && count($this->items)>0,$this->params['viewer']);
   return parent::display($tpl);
  }
 }

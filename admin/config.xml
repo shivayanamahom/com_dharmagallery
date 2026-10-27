@@ -7,17 +7,29 @@
   <field name="allowed_file_extensions" type="text" label="COM_DHARMAGALLERY_ALLOWED_EXTENSIONS" description="COM_DHARMAGALLERY_ALLOWED_EXTENSIONS_DESC" default="jpg,jpeg,png,webp,gif,pdf,txt,csv,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp" required="true" validate="extensions" message="COM_DHARMAGALLERY_INVALID_EXTENSIONS" />
   <field name="upload_maxsize" type="number" label="COM_DHARMAGALLERY_MAXSIZE" description="COM_DHARMAGALLERY_MAXSIZE_DESC" default="20" min="1" max="100" />
   <field name="max_items" type="number" label="COM_DHARMAGALLERY_MAX_ITEMS" default="100" min="1" max="300" />
-  <field name="show_title" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_TITLES" description="COM_DHARMAGALLERY_SHOW_TITLES_GLOBAL_DESC" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
   <field name="albums_per_page" type="number" label="COM_DHARMAGALLERY_ALBUMS_LIMIT" default="12" min="1" max="100" />
   <field name="items_per_page" type="number" label="COM_DHARMAGALLERY_ITEMS_LIMIT" default="24" min="1" max="100" />
  </fieldset>
- <fieldset name="images" label="COM_DHARMAGALLERY_IMAGE_PROCESSING">
+ <fieldset name="gallery" label="COM_DHARMAGALLERY_MODE_GALLERY">
+  <field name="columns" type="list" label="COM_DHARMAGALLERY_COLUMNS" default="3"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></field>
+  <field name="image_mode" type="list" label="COM_DHARMAGALLERY_IMAGE_MODE" default="natural"><option value="natural">COM_DHARMAGALLERY_NATURAL</option><option value="cover">COM_DHARMAGALLERY_CROP</option></field>
+  <field name="show_title" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_TITLES" description="COM_DHARMAGALLERY_SHOW_TITLES_GLOBAL_DESC" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
+  <field name="lightbox" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_LIGHTBOX" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
+  <field name="lightbox_engine" type="list" label="COM_DHARMAGALLERY_VIEWER" default="bootstrap" showon="lightbox:1"><option value="bootstrap">Bootstrap Modal</option><option value="fancybox">WT Fancybox</option></field>
+  <field name="fancybox_info" type="note" description="COM_DHARMAGALLERY_FANCYBOX_INFO" class="alert alert-info" showon="lightbox:1[AND]lightbox_engine:fancybox" />
+  <field name="image_processing_heading" type="note" label="COM_DHARMAGALLERY_IMAGE_PROCESSING" heading="h3" />
   <field name="convert_webp" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_WEBP" description="COM_DHARMAGALLERY_WEBP_DESC" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
   <field name="image_quality" type="number" label="COM_DHARMAGALLERY_QUALITY" default="82" min="30" max="100" />
   <field name="max_image_width" type="number" label="COM_DHARMAGALLERY_MAX_IMAGE_WIDTH" default="1920" min="320" max="4096" />
   <field name="max_image_height" type="number" label="COM_DHARMAGALLERY_MAX_IMAGE_HEIGHT" default="1920" min="320" max="4096" />
   <field name="thumb_width" type="number" label="COM_DHARMAGALLERY_THUMB_WIDTH" default="640" min="160" max="2048" />
   <field name="thumb_height" type="number" label="COM_DHARMAGALLERY_THUMB_HEIGHT" default="480" min="120" max="2048" />
+ </fieldset>
+ <fieldset name="files" label="COM_DHARMAGALLERY_MODE_FILES">
+  <field name="files_layout" type="list" label="COM_DHARMAGALLERY_FILES_LAYOUT" default="list"><option value="list">COM_DHARMAGALLERY_LIST</option><option value="grid">COM_DHARMAGALLERY_GRID</option></field>
+  <field name="show_size" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_SIZE" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
+  <field name="show_extension" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_EXTENSION" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
+  <field name="download" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_DOWNLOAD_ACTION" default="1"><option value="0">COM_DHARMAGALLERY_OPEN</option><option value="1">COM_DHARMAGALLERY_DOWNLOAD</option></field>
  </fieldset>
  <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL"><field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" component="com_dharmagallery" section="component" filter="rules" validate="rules" /></fieldset>
 </config>

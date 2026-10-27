@@ -87,15 +87,35 @@ final class GalleryHelper
      }
      return self::route($parent ? 'album' : 'albums', $parent);
  }
- public static function columns($params): int { $v=(int)($params['columns']??0); return in_array($v,[2,3,4,6],true)?$v:(int)ComponentHelper::getParams('com_dharmagallery')->get('columns',3); }
+ public static function columns($params): int { return (int) self::settings((array) $params)['columns']; }
 
 
- /** Пустое значение альбома наследует общий переключатель; 0 и 1 переопределяют его. */
- public static function showPhotoTitles(array $params): bool
+ /** Пустое значение альбома наследует общий параметр; явное значение переопределяет его. */
+ public static function settings(array $params): array
  {
-     $value = $params['show_title'] ?? '';
-     if ($value === '') { $value = ComponentHelper::getParams('com_dharmagallery')->get('show_title', 1); }
-     return (int) $value === 1;
+     $defaults = ['columns' => 3, 'image_mode' => 'natural', 'show_title' => 1, 'lightbox' => 1, 'files_layout' => 'list', 'show_size' => 1, 'show_extension' => 1, 'download' => 1];
+     $global = ComponentHelper::getParams('com_dharmagallery');
+     foreach ($defaults as $key => $default) {
+         if (!array_key_exists($key, $params) || $params[$key] === '' || $params[$key] === null) { $params[$key] = $global->get($key, $default); }
+     }
+     $params['columns'] = in_array((int) $params['columns'], [2, 3, 4, 6], true) ? (int) $params['columns'] : 3;
+     $params['image_mode'] = $params['image_mode'] === 'cover' ? 'cover' : 'natural';
+     $params['files_layout'] = $params['files_layout'] === 'grid' ? 'grid' : 'list';
+     foreach (['show_title', 'lightbox', 'show_size', 'show_extension', 'download'] as $key) { $params[$key] = (int) $params[$key] === 1 ? 1 : 0; }
+     return $params;
+ }
+ public static function showPhotoTitles(array $params): bool { return self::settings($params)['show_title'] === 1; }
+
+ public static function viewer(array $params, $doc): string
+ {
+     $params = self::settings($params);
+     if (($params['mode'] ?? 'gallery') !== 'gallery' || !$params['lightbox']) { return 'none'; }
+     if (ComponentHelper::getParams('com_dharmagallery')->get('lightbox_engine', 'bootstrap') === 'fancybox'
+         && \Joomla\CMS\Plugin\PluginHelper::isEnabled('system', 'wtfancybox')
+         && $doc->getWebAssetManager()->assetExists('preset', 'wtfancybox')) {
+         return 'fancybox';
+     }
+     return 'bootstrap';
  }
 
  /** Выбранная обложка либо первое опубликованное и доступное фото самого альбома. */
@@ -181,8 +201,16 @@ final class GalleryHelper
          if (is_file($temporary)) { unlink($temporary); }
      }
  }
- public static function assets($doc,bool $lightbox=false): void {
-  $wa=$doc->getWebAssetManager(); $wa->getRegistry()->addExtensionRegistryFile('com_dharmagallery');
-  if ($lightbox) { \Joomla\CMS\HTML\HTMLHelper::_('bootstrap.modal','.dg-lightbox'); $wa->useScript('com_dharmagallery.lightbox'); }
+ public static function assets($doc, bool $lightbox = false, string $engine = 'bootstrap'): void
+ {
+     $wa = $doc->getWebAssetManager();
+     $wa->getRegistry()->addExtensionRegistryFile('com_dharmagallery');
+     if (!$lightbox || $engine === 'none') { return; }
+     if ($engine === 'fancybox' && $wa->assetExists('preset', 'wtfancybox')) {
+         $wa->usePreset('wtfancybox')->useScript('com_dharmagallery.fancybox');
+     } else {
+         \Joomla\CMS\HTML\HTMLHelper::_('bootstrap.modal', '.dg-lightbox');
+         $wa->useScript('com_dharmagallery.lightbox');
+     }
  }
 }

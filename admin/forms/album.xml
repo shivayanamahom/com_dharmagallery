@@ -22,14 +22,14 @@
  </fieldset>
  <fields name="params">
   <fieldset name="display" label="COM_DHARMAGALLERY_SETTINGS">
-   <field name="columns" type="list" label="COM_DHARMAGALLERY_COLUMNS" default="3" showon=".mode:gallery"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></field>
-   <field name="image_mode" type="list" label="COM_DHARMAGALLERY_IMAGE_MODE" default="natural" showon=".mode:gallery"><option value="natural">COM_DHARMAGALLERY_NATURAL</option><option value="cover">COM_DHARMAGALLERY_CROP</option></field>
+   <field name="columns" type="list" label="COM_DHARMAGALLERY_COLUMNS" default="" showon=".mode:gallery"><option value="">JGLOBAL_USE_GLOBAL</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></field>
+   <field name="image_mode" type="list" label="COM_DHARMAGALLERY_IMAGE_MODE" default="" showon=".mode:gallery"><option value="">JGLOBAL_USE_GLOBAL</option><option value="natural">COM_DHARMAGALLERY_NATURAL</option><option value="cover">COM_DHARMAGALLERY_CROP</option></field>
    <field name="show_title" type="list" label="COM_DHARMAGALLERY_SHOW_TITLES" description="COM_DHARMAGALLERY_SHOW_TITLES_ALBUM_DESC" default="" showon=".mode:gallery"><option value="">JGLOBAL_USE_GLOBAL</option><option value="1">JYES</option><option value="0">JNO</option></field>
-   <field name="lightbox" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_LIGHTBOX" default="1" showon=".mode:gallery"><option value="0">JNO</option><option value="1">JYES</option></field>
-   <field name="files_layout" type="list" label="COM_DHARMAGALLERY_FILES_LAYOUT" default="list" showon=".mode:files"><option value="list">COM_DHARMAGALLERY_LIST</option><option value="grid">COM_DHARMAGALLERY_GRID</option></field>
-   <field name="show_size" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_SIZE" default="1" showon=".mode:files"><option value="0">JNO</option><option value="1">JYES</option></field>
-   <field name="show_extension" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_EXTENSION" default="1" showon=".mode:files"><option value="0">JNO</option><option value="1">JYES</option></field>
-   <field name="download" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_DOWNLOAD_ACTION" default="1" showon=".mode:files"><option value="0">COM_DHARMAGALLERY_OPEN</option><option value="1">COM_DHARMAGALLERY_DOWNLOAD</option></field>
+   <field name="lightbox" type="list" label="COM_DHARMAGALLERY_LIGHTBOX" default="" showon=".mode:gallery"><option value="">JGLOBAL_USE_GLOBAL</option><option value="1">JYES</option><option value="0">JNO</option></field>
+   <field name="files_layout" type="list" label="COM_DHARMAGALLERY_FILES_LAYOUT" default="" showon=".mode:files"><option value="">JGLOBAL_USE_GLOBAL</option><option value="list">COM_DHARMAGALLERY_LIST</option><option value="grid">COM_DHARMAGALLERY_GRID</option></field>
+   <field name="show_size" type="list" label="COM_DHARMAGALLERY_SHOW_SIZE" default="" showon=".mode:files"><option value="">JGLOBAL_USE_GLOBAL</option><option value="1">JYES</option><option value="0">JNO</option></field>
+   <field name="show_extension" type="list" label="COM_DHARMAGALLERY_SHOW_EXTENSION" default="" showon=".mode:files"><option value="">JGLOBAL_USE_GLOBAL</option><option value="1">JYES</option><option value="0">JNO</option></field>
+   <field name="download" type="list" label="COM_DHARMAGALLERY_DOWNLOAD_ACTION" default="" showon=".mode:files"><option value="">JGLOBAL_USE_GLOBAL</option><option value="1">COM_DHARMAGALLERY_DOWNLOAD</option><option value="0">COM_DHARMAGALLERY_OPEN</option></field>
   </fieldset>
  </fields>
  <fieldset name="permissions"><field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" component="com_dharmagallery" section="album" filter="rules" validate="rules" /></fieldset>
