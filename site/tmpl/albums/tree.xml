@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+ <layout title="COM_DHARMAGALLERY_MENU_FILETREE"><message>COM_DHARMAGALLERY_MENU_FILETREE_DESC</message></layout>
+ <fields name="params">
+  <fieldset name="basic" addfieldprefix="Dharma\Component\Gallery\Administrator\Field">
+   <field name="parent_id" type="albumparent" exclude_current="false" layout="joomla.form.field.list-fancy-select" label="COM_DHARMAGALLERY_FILETREE_ROOT" description="COM_DHARMAGALLERY_FILETREE_ROOT_DESC" default="0"><option value="0">COM_DHARMAGALLERY_FILETREE_ALL</option></field>
+  </fieldset>
+ </fields>
+</metadata>

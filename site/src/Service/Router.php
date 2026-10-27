@@ -44,6 +44,16 @@ class Router extends RouterView
 		$this->attachRule(new NomenuRules($this));
 	}
 
+	public function parse(&$segments)
+	{
+		$vars = parent::parse($segments);
+		// Макет списка из меню не переносится на страницу отдельного альбома.
+		if (($vars['view'] ?? '') === 'album' && ($vars['layout'] ?? '') === 'tree') {
+			$vars['layout'] = 'default';
+		}
+		return $vars;
+	}
+
 	public function getAlbumSegment($id, $query)
 	{
 		$id = (int) $id;
