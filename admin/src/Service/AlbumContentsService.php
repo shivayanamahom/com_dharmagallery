@@ -25,7 +25,7 @@ final class AlbumContentsService
         $canState = $user->authorise('core.edit.state', MediaHelper::asset($albumId));
         $limit = max(1, min(300, (int) ComponentHelper::getParams('com_dharmagallery')->get('max_items', 100)));
         if (count($rows) > max($limit, count($original))) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_TOO_MANY_FILES'); }
-        $result = []; $seen = [];
+        $result = []; $seen = []; $obsolete = [];
         foreach ($rows as $row) {
             $row = (array) $row;
             $id = (int) ($row['id'] ?? 0);
@@ -36,7 +36,7 @@ final class AlbumContentsService
             $path = MediaHelper::path($path);
             $meta = MediaHelper::metadata($path);
             if ($mode === 'gallery' && $meta['type'] !== 'image') { throw new \InvalidArgumentException('COM_DHARMAGALLERY_IMAGES_ONLY'); }
-            if ($id) { $seen[$id] = true; }
+            if ($id) { $seen[$id] = true; if ($original[$id]->path !== $path) { $obsolete[] = $original[$id]->path; } }
             $published = $canState ? (int) ($row['published'] ?? 1) : (int) ($original[$id]->published ?? 1);
             $result[] = array_merge($meta, [
                 'id' => $id,
@@ -53,7 +53,8 @@ final class AlbumContentsService
         }
         $removed = array_diff(array_keys($original), array_keys($seen));
         if ($removed && !$user->authorise('core.delete', MediaHelper::asset($albumId))) { throw new \RuntimeException('JERROR_ALERTNOAUTHOR'); }
-        return ['items' => $result, 'removed' => $removed];
+        foreach ($removed as $removedId) { $obsolete[] = $original[$removedId]->path; }
+        return ['items' => $result, 'removed' => $removed, 'obsolete' => $obsolete];
     }
 
     public function store(array $prepared, int $albumId): void
@@ -75,8 +76,15 @@ final class AlbumContentsService
             }
         }
         if ($prepared['removed']) {
-            // Удаляется только связь с альбомом; оригинал может использоваться в других материалах.
+            // Оригиналы обрабатываются отдельно после фиксации транзакции.
             $this->db->setQuery('DELETE FROM #__dharmagallery_photos WHERE album_id=' . $albumId . ' AND id IN (' . implode(',', array_map('intval', $prepared['removed'])) . ')')->execute();
+        }
+    }
+
+    public function cleanup(array $prepared): void
+    {
+        if ((int) ComponentHelper::getParams('com_dharmagallery')->get('delete_removed_files', 0) === 1) {
+            (new StorageService($this->db))->deleteUnreferenced($prepared['obsolete'] ?? []);
         }
     }
 }

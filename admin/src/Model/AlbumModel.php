@@ -53,7 +53,7 @@ class AlbumModel extends RecordModel
 
     public function getChildren(int $albumId): array
     {
-        return $this->getDatabase()->setQuery('SELECT id, title, mode, published FROM #__dharmagallery_albums WHERE parent_id=' . $albumId . ' ORDER BY ordering, id')->loadObjectList();
+        return $this->getDatabase()->setQuery('SELECT id, title, mode, published FROM #__dharmagallery_albums WHERE parent_id=' . $albumId . ' AND published>=0 ORDER BY ordering, id')->loadObjectList();
     }
 
     protected function getReorderConditions($table) { return ['parent_id=' . (int) $table->parent_id]; }
@@ -64,9 +64,18 @@ class AlbumModel extends RecordModel
         try {
             if ((int) ($data['mediaitems_complete'] ?? 0) !== 1) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INCOMPLETE_FORM'); }
             $id = (int) ($data['id'] ?? 0);
-            $old = $id ? $db->setQuery('SELECT id, mode FROM #__dharmagallery_albums WHERE id=' . $id)->loadObject() : null;
+            $old = $id ? $db->setQuery('SELECT id, mode, parent_id FROM #__dharmagallery_albums WHERE id=' . $id)->loadObject() : null;
             if ($id && !$old) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_ALBUM'); }
             $data['mode'] = $old ? $old->mode : ($data['mode'] ?? 'gallery');
+            $parent = (int) ($data['parent_id'] ?? ($old->parent_id ?? 0));
+            if ($parent && $parent !== (int) ($old->parent_id ?? 0)) {
+                $seen = [];
+                while ($parent > 0) {
+                    $row = $db->setQuery('SELECT parent_id,published FROM #__dharmagallery_albums WHERE id=' . $parent)->loadObject();
+                    if (!$row || (int) $row->published !== 1 || isset($seen[$parent])) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_PARENT_UNAVAILABLE'); }
+                    $seen[$parent] = true; $parent = (int) $row->parent_id;
+                }
+            }
             if (!in_array($data['mode'], ['gallery', 'files'], true)) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_MODE'); }
             if (!empty($data['cover'])) {
                 $data['cover'] = MediaHelper::path($data['cover']);
@@ -81,6 +90,7 @@ class AlbumModel extends RecordModel
             if (!parent::save($data)) { $db->transactionRollback(); return false; }
             $service->store($prepared, (int) $this->getState('album.id'));
             $db->transactionCommit();
+            $service->cleanup($prepared);
             return true;
         } catch (\Throwable $e) {
             if (isset($prepared)) { try { $db->transactionRollback(); } catch (\Throwable $ignored) {} }
@@ -89,14 +99,38 @@ class AlbumModel extends RecordModel
         }
     }
 
+
     public function delete(&$pks)
     {
-        foreach ($pks as $id) {
-            $db = $this->getDatabase();
-            if ($db->setQuery('SELECT COUNT(*) FROM #__dharmagallery_albums WHERE parent_id=' . (int) $id)->loadResult() || $db->setQuery('SELECT COUNT(*) FROM #__dharmagallery_photos WHERE album_id=' . (int) $id)->loadResult()) {
-                $this->setError(Text::_('COM_DHARMAGALLERY_ALBUM_NOT_EMPTY')); return false;
-            }
+        $db = $this->getDatabase();
+        $pks = array_values(array_unique(array_filter(array_map('intval', (array) $pks))));
+        if (!$pks) { return false; }
+        $ids = implode(',', $pks);
+        if ($db->setQuery('SELECT COUNT(*) FROM #__dharmagallery_albums WHERE parent_id IN (' . $ids . ') AND id NOT IN (' . $ids . ')')->loadResult()) {
+            $this->setError(Text::_('COM_DHARMAGALLERY_REMOVE_CHILDREN_FIRST')); return false;
         }
-        return parent::delete($pks);
+        $table = $this->getTable();
+        foreach ($pks as $id) {
+            if (!$table->load($id) || !$this->canDelete($table)) { $this->setError(Text::_('JERROR_ALERTNOAUTHOR')); return false; }
+        }
+        $parents = $db->setQuery('SELECT id,parent_id FROM #__dharmagallery_albums')->loadAssocList('id');
+        $depth = static function (int $id) use ($parents): int {
+            $seen = []; $level = 0;
+            while (isset($parents[$id]) && !isset($seen[$id])) { $seen[$id] = true; $id = (int) $parents[$id]['parent_id']; $level++; }
+            return $level;
+        };
+        usort($pks, static fn($a, $b) => $depth($b) <=> $depth($a));
+        $paths = $db->setQuery('SELECT path FROM #__dharmagallery_photos WHERE album_id IN (' . $ids . ')')->loadColumn();
+        $covers = $db->setQuery('SELECT cover FROM #__dharmagallery_albums WHERE id IN (' . $ids . ')')->loadColumn();
+        try {
+            $db->transactionStart();
+            if (!parent::delete($pks)) { $db->transactionRollback(); return false; }
+            $db->setQuery('DELETE FROM #__dharmagallery_photos WHERE album_id IN (' . $ids . ')')->execute();
+            $db->transactionCommit();
+        } catch (\Throwable $e) { $db->transactionRollback(); $this->setError($e->getMessage()); return false; }
+        if ((int) \Joomla\CMS\Component\ComponentHelper::getParams('com_dharmagallery')->get('delete_album_files', 0) === 1) {
+            (new \Dharma\Component\Gallery\Administrator\Service\StorageService($db))->deleteUnreferenced(array_merge($paths, $covers));
+        }
+        return true;
     }
 }

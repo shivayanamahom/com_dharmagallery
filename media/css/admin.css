@@ -1,0 +1,28 @@
+@media (min-width: 0px) {
+    .dg-upload-panel { border: 2px dashed var(--template-bg-dark-20, #c8d2df); border-radius: .4rem; }
+    .dg-upload-panel.dg-dragover { border-color: var(--template-link-color, #2a69b8); background: var(--template-bg-light, #f0f4fb); }
+    .dg-upload-panel [data-dg-files] { display: none; }
+    .dg-contents-cards joomla-field-subform { display: flex; }
+    .dg-contents-cards .dg-cards-add { flex: 0 0 100%; width: 100%; }
+    .dg-contents-cards div.subform-repeatable-group { margin: var(--gutter-y, 1rem) 0 0; padding-right: .5rem; padding-left: .5rem; border: 0; overflow: visible; }
+    .dg-media-card { overflow: hidden; border-color: var(--template-bg-dark-20, #c8d2df); }
+    .dg-media-preview { display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; overflow: hidden; background: var(--template-bg-light, #f0f4fb); padding: .5rem; }
+    .dg-media-preview img { width: 100%; height: 100%; object-fit: contain; }
+    .dg-file-preview { display: flex; flex-direction: column; align-items: center; gap: .75rem; font-size: 1.25rem; font-weight: 600; color: var(--template-text-dark, #495057); }
+    .dg-file-preview .icon-file { font-size: 3rem; opacity: .65; }
+    .dg-contents-cards .control-group { margin: 0 0 .5rem; padding: 0; display: block; }
+    .dg-contents-cards .control-label { float: none; width: auto; padding: 0; }
+    .dg-contents-cards .controls { margin: 0; min-width: 0; }
+    .dg-contents-cards joomla-field-media { display: block; width: 100%; }
+    .dg-contents-cards .field-media-wrapper .input-group { flex-wrap: nowrap; }
+    .dg-contents-cards .field-media-input { min-width: 0; font-size: .75rem; }
+    .dg-contents-cards .field-media-wrapper .btn { padding: .3rem .5rem; }
+    .dg-card-details { margin-top: .5rem; }
+    .dg-card-details summary { cursor: pointer; font-size: .85rem; color: var(--template-link-color, #2a69b8); }
+    .dg-card-details[open] summary { margin-bottom: .5rem; }
+    .dg-contents-cards div.subform-repeatable-group .dg-card-actions { position: static; inset: auto; display: flex; padding: 0; margin: 0; }
+    .dg-contents-cards .dg-card-actions .btn-group { display: flex; position: static; }
+    .dg-contents-cards .dg-card-actions .btn-group .btn { position: static; flex: 1 1 0; inset: auto; margin: 0; padding: .4rem 0; border-radius: 0; transform: none; }
+    .dg-contents-cards .dg-card-actions .group-move-up, .dg-contents-cards .dg-card-actions .group-move-down { display: none; }
+    .dg-contents-cards .subform-repeatable-group[aria-grabbed="true"] { opacity: .55; }
+}

@@ -23,4 +23,45 @@ class AlbumsModel extends ListModel
   $order=$this->getState('list.ordering','a.ordering'); if (!in_array($order,['a.id','a.title','a.published','a.ordering','a.access'],true)) { $order='a.ordering'; }
   return $q->order($order.' '.($this->getState('list.direction')==='DESC'?'DESC':'ASC'))->order('a.id ASC');
  }
+
+ private ?array $treeItems = null;
+
+ /** Группировка дерева выполняется до пагинации, чтобы подальбомы не смешивались с соседними ветками. */
+ private function tree(): array
+ {
+     if ($this->treeItems !== null) { return $this->treeItems; }
+     $this->getState();
+     $db = $this->getDatabase();
+     $items = $db->setQuery($this->getListQuery())->loadObjectList('id');
+     $parents = $db->setQuery('SELECT id,parent_id FROM #__dharmagallery_albums')->loadObjectList('id');
+     $children = [];
+     foreach ($items as $item) { $children[(int) $item->parent_id][] = $item; }
+     $flat = []; $seen = [];
+     $append = function ($item) use (&$append, &$flat, &$seen, $children, $parents): void {
+         $id = (int) $item->id;
+         if (isset($seen[$id])) { return; }
+         $seen[$id] = true;
+         $level = 0; $parent = (int) $item->parent_id; $chain = [$id => true];
+         while ($parent > 0 && isset($parents[$parent]) && !isset($chain[$parent])) {
+             $chain[$parent] = true; $level++; $parent = (int) $parents[$parent]->parent_id;
+         }
+         $item->level = $level;
+         $flat[] = $item;
+         foreach ($children[$id] ?? [] as $child) { $append($child); }
+     };
+     foreach ($items as $item) { if (!(int) $item->parent_id || !isset($items[(int) $item->parent_id])) { $append($item); } }
+     foreach ($items as $item) { $append($item); }
+     return $this->treeItems = $flat;
+ }
+
+ public function getItems()
+ {
+     $items = $this->tree();
+     $limit = max(0, (int) $this->getState('list.limit'));
+     $start = max(0, (int) $this->getState('list.start'));
+     if ($start >= count($items)) { $start = 0; $this->setState('list.start', 0); }
+     return $limit ? array_slice($items, $start, $limit) : $items;
+ }
+
+ public function getTotal() { return count($this->tree()); }
 }

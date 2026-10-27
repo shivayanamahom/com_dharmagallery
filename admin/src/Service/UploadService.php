@@ -18,12 +18,8 @@ final class UploadService
   $ext=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION)); if (!isset(MediaHelper::TYPES[$ext])) { throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_TYPE'); }
   $name=OutputFilter::stringURLSafe(pathinfo($file['name'],PATHINFO_FILENAME));
   $name=substr($name,0,100) ?: 'file'; $name.='-'.bin2hex(random_bytes(8)).'.'.$ext;
-  $directory=(string)$albumId;
-  $relative='images/dharmagallery/'.$directory.'/'.$name;
-  $dir=JPATH_ROOT.'/images/dharmagallery/'.$directory;
-  if (!Folder::exists($dir) && !Folder::create($dir)) { throw new \RuntimeException('COM_DHARMAGALLERY_UPLOAD_FAILED'); }
-  // Resolve directory symlinks before moving anything into the public tree.
-  $root=realpath(JPATH_ROOT.'/images'); if (!$root || !str_starts_with(realpath($dir),$root.DIRECTORY_SEPARATOR)) { throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_PATH'); }
+  $directory = StorageService::albumDirectory($albumId);
+  $relative = $directory . '/' . $name;
   $mime=(new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
   if ($mode === 'gallery' && !str_starts_with($mime, 'image/')) { throw new \RuntimeException('COM_DHARMAGALLERY_IMAGES_ONLY'); }
   if (!in_array($mime,MediaHelper::TYPES[$ext],true)) { throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_TYPE'); }
@@ -32,7 +28,7 @@ final class UploadService
   if (!JoomlaMediaHelper::checkFileExtension($ext,'com_dharmagallery')) { throw new \RuntimeException('COM_DHARMAGALLERY_INVALID_TYPE'); }
   $dest=JPATH_ROOT.'/'.$relative;
   if (!File::upload($file['tmp_name'],$dest,false,false)) { throw new \RuntimeException('COM_DHARMAGALLERY_UPLOAD_FAILED'); }
-  try { $meta=MediaHelper::metadata($relative); } catch (\Throwable $e) { File::delete($dest); throw $e; }
+  try { $meta=MediaHelper::metadata($relative); (new StorageService(Factory::getContainer()->get(\Joomla\Database\DatabaseInterface::class)))->register($relative, $albumId); } catch (\Throwable $e) { File::delete($dest); throw $e; }
   return array_merge(['path'=>$relative,'title'=>pathinfo($file['name'],PATHINFO_FILENAME)],$meta);
  }
 }

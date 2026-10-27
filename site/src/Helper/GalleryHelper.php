@@ -51,7 +51,7 @@ final class GalleryHelper
              $th = max(120, min(2048, (int) $params->get('thumb_height', 480)));
              $ext = $webp ? 'webp' : ($size[2] === IMAGETYPE_PNG ? 'png' : 'jpg');
              $format = $webp ? IMAGETYPE_WEBP : ($ext === 'png' ? IMAGETYPE_PNG : IMAGETYPE_JPEG);
-             $key = sha1($path . '|' . filemtime($real) . '|' . filesize($real) . '|' . json_encode([$width, $height, $tw, $th, $quality, $ext]));
+             $key = sha1($path) . '-' . sha1($path . '|' . filemtime($real) . '|' . filesize($real) . '|' . json_encode([$width, $height, $tw, $th, $quality, $ext]));
              $dir = JPATH_ROOT . '/images/dharmagallery-cache';
              if (!is_dir($dir)) { Folder::create($dir); }
              // Анимированный GIF открывается в оригинале, чтобы не терять анимацию.

@@ -61,6 +61,15 @@ final class Com_DharmagalleryInstallerScript extends InstallerScript
             }
             $db->setQuery('UPDATE #__dharmagallery_albums SET asset_id=' . (int) $asset->id . ' WHERE id=' . (int) $album->id)->execute();
         }
+        $legacy = $db->setQuery("SELECT path,album_id FROM #__dharmagallery_photos WHERE path LIKE 'images/dharmagallery/%'")->loadObjectList();
+        foreach ($legacy as $file) {
+            if (!preg_match('#^images/dharmagallery/(?:[0-9]+|files/[0-9]+)/[^/]+$#u', $file->path)) { continue; }
+            $hash = hash('sha256', $file->path);
+            if (!$db->setQuery('SELECT path_hash FROM #__dharmagallery_uploads WHERE path_hash=' . $db->quote($hash))->loadResult()) {
+                $record = (object) ['path_hash' => $hash, 'path' => $file->path, 'album_id' => (int) $file->album_id];
+                $db->insertObject('#__dharmagallery_uploads', $record);
+            }
+        }
         if (is_file(JPATH_ADMINISTRATOR . '/cache/autoload_psr4.php')) { unlink(JPATH_ADMINISTRATOR . '/cache/autoload_psr4.php'); }
         return true;
     }

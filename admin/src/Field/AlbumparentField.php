@@ -1,109 +1,61 @@
 <?php
-
 namespace Dharma\Component\Gallery\Administrator\Field;
-
 defined('_JEXEC') or die;
-
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Field\ListField;
-
+use Joomla\CMS\Language\Text;
+use Joomla\Database\DatabaseInterface;
 class AlbumparentField extends ListField
 {
-	protected $type = 'Albumparent';
-
-	protected function getOptions()
-	{
-		$options = parent::getOptions();
-
-		$currentId = (string) $this->element['exclude_current'] === 'false' ? 0 : (int) $this->form->getValue('id');
-
-		$db    = Factory::getContainer()->get(\Joomla\Database\DatabaseInterface::class);
-		$query = $db->getQuery(true)
-			->select(['id', 'title', 'parent_id', 'ordering'])
-			->from($db->quoteName('#__dharmagallery_albums'))
-			->order($db->quoteName('ordering') . ' ASC')
-			->order($db->quoteName('title') . ' ASC');
-		$db->setQuery($query);
-		$rows = $db->loadObjectList();
-
-		$childrenByParent = [];
-
-		foreach ($rows as $row)
-		{
-			$childrenByParent[(int) $row->parent_id][] = $row;
-		}
-
-		// Нельзя назначать альбом своим дочерним альбомом: это создаст цикл
-		// и сломает дерево при следующем редактировании.
-		$excludedIds = [];
-		$excludeBranch = function (int $id) use (&$excludeBranch, &$excludedIds, $childrenByParent): void {
-			if (isset($excludedIds[$id]))
-			{
-				return;
-			}
-
-			$excludedIds[$id] = true;
-
-			foreach ($childrenByParent[$id] ?? [] as $child)
-			{
-				$excludeBranch((int) $child->id);
-			}
-		};
-
-		if ($currentId > 0)
-		{
-			$excludeBranch($currentId);
-		}
-
-		$visitedIds = [];
-		$appendBranch = function (int $parentId, string $prefix = '', bool $rootLevel = false) use (&$appendBranch, &$visitedIds, &$options, $childrenByParent, $excludedIds): void {
-			$children = $childrenByParent[$parentId] ?? [];
-			$total = count($children);
-
-			foreach ($children as $index => $row)
-			{
-				$id = (int) $row->id;
-
-				if (isset($excludedIds[$id]) || isset($visitedIds[$id]))
-				{
-					continue;
-				}
-
-				$visitedIds[$id] = true;
-				$isLast = $index === $total - 1;
-				$branchPrefix = $rootLevel ? '' : $prefix . ($isLast ? '└─ ' : '├─ ');
-
-				$options[] = (object) [
-					'value' => $id,
-					'text'  => $branchPrefix . $row->title,
-				];
-
-				$nextPrefix = $rootLevel ? '' : $prefix . ($isLast ? '   ' : '│  ');
-				$appendBranch($id, $nextPrefix);
-			}
-		};
-
-		// Сначала выводим корневые альбомы, затем их дочерние ветки.
-		$appendBranch(0, '', true);
-
-		// На случай старых записей с некорректным parent_id не теряем их из списка,
-		// но показываем отдельной дочерней строкой внизу.
-		foreach ($rows as $row)
-		{
-			$id = (int) $row->id;
-
-			if (isset($excludedIds[$id]) || isset($visitedIds[$id]))
-			{
-				continue;
-			}
-
-			$visitedIds[$id] = true;
-			$options[] = (object) [
-				'value' => $id,
-				'text'  => '└─ ' . $row->title,
-			];
-		}
-
-		return $options;
-	}
+    protected $type = 'Albumparent';
+    protected function getOptions()
+    {
+        $options = parent::getOptions();
+        $currentId = (string) $this->element['exclude_current'] === 'false' ? 0 : (int) $this->form->getValue('id');
+        $publishedOnly = (string) $this->element['published_only'] !== 'false';
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $rows = $db->setQuery('SELECT id,title,parent_id,ordering,published FROM #__dharmagallery_albums ORDER BY ordering,title,id')->loadObjectList('id');
+        $children = [];
+        foreach ($rows as $row) { $children[(int) $row->parent_id][] = $row; }
+        $excluded = [];
+        $exclude = function (int $id) use (&$exclude, &$excluded, $children): void {
+            if (isset($excluded[$id])) { return; }
+            $excluded[$id] = true;
+            foreach ($children[$id] ?? [] as $child) { $exclude((int) $child->id); }
+        };
+        if ($currentId) { $exclude($currentId); }
+        $eligible = static function (int $id) use ($rows, $publishedOnly): bool {
+            if (!$publishedOnly) { return true; }
+            $seen = [];
+            while ($id > 0) {
+                if (!isset($rows[$id]) || isset($seen[$id]) || (int) $rows[$id]->published !== 1) { return false; }
+                $seen[$id] = true; $id = (int) $rows[$id]->parent_id;
+            }
+            return true;
+        };
+        $visited = [];
+        $append = function (int $parent, int $depth = 0) use (&$append, &$options, &$visited, $children, $eligible, $excluded): void {
+            foreach ($children[$parent] ?? [] as $row) {
+                $id = (int) $row->id;
+                if (isset($excluded[$id]) || isset($visited[$id]) || !$eligible($id)) { continue; }
+                $visited[$id] = true;
+                $options[] = (object) ['value' => $id, 'text' => str_repeat('— ', $depth) . $row->title];
+                $append($id, $depth + 1);
+            }
+        };
+        $append(0);
+        if (!$publishedOnly) {
+            foreach ($rows as $id => $row) {
+                if (!isset($visited[$id]) && !isset($excluded[$id])) {
+                    $options[] = (object) ['value' => $id, 'text' => $row->title]; $visited[$id] = true; $append((int) $id, 1);
+                }
+            }
+        }
+        // Существующая связь с недоступным родителем показывается только как закреплённое значение.
+        $savedParent = (int) ($rows[$currentId]->parent_id ?? 0);
+        if ($savedParent && isset($rows[$savedParent]) && !isset($visited[$savedParent]) && (int) $this->value === $savedParent) {
+            $options[] = (object) ['value' => $savedParent, 'text' => $rows[$savedParent]->title . ' (' . Text::_('COM_DHARMAGALLERY_PARENT_UNAVAILABLE') . ')', 'disable' => true];
+        }
+        return $options;
+    }
 }

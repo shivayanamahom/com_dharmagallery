@@ -26,8 +26,9 @@ if ($saveOrder) { HTMLHelper::_('draggablelist.draggable'); }
 <td><span class="sortable-handler<?php echo $saveOrder?'':' inactive'; ?>"><span class="icon-ellipsis-v" aria-hidden="true"></span></span><?php if ($saveOrder): ?><input type="hidden" name="order[]" value="<?php echo (int)$item->ordering; ?>"><?php endif; ?></td>
 <td><?php echo HTMLHelper::_('jgrid.published',$item->published,$i,$plural.'.',$user->authorise('core.edit.state',MediaHelper::asset($albumId))); ?></td>
 <th scope="row"><?php if ($item->checked_out): echo HTMLHelper::_('jgrid.checkedout',$i,$item->created_by,$item->checked_out_time,$plural.'.'); endif; ?>
+<?php echo str_repeat('<span class="gi" aria-hidden="true">&mdash;&nbsp;</span>', (int) ($item->level ?? 0)); ?>
 <?php if ($canEdit): ?><a href="<?php echo Route::_('index.php?option=com_dharmagallery&task='.$kind.'.edit&id='.(int)$item->id); ?>"><?php echo $this->escape($item->title); ?></a><?php else: echo $this->escape($item->title); endif; ?>
-<?php if ($kind==='album'): ?><small class="d-block text-muted"><?php echo $this->escape($item->alias); ?></small><?php else: ?><small class="d-block text-muted"><?php echo $this->escape($item->filename); ?></small><?php endif; ?></th>
+<?php if ($kind==='album'): ?><small class="d-block text-muted"><?php echo str_repeat('<span class="gi" aria-hidden="true">&mdash;&nbsp;</span>', (int) ($item->level ?? 0)); echo Text::_('JFIELD_ALIAS_LABEL') . ': ' . $this->escape($item->alias); ?></small><?php else: ?><small class="d-block text-muted"><?php echo $this->escape($item->filename); ?></small><?php endif; ?></th>
 <td><?php echo $this->escape($item->album_title ?: Text::_('JNONE')); ?></td><td><?php echo Text::_($item->mode === 'files' ? 'COM_DHARMAGALLERY_MODE_FILES' : 'COM_DHARMAGALLERY_MODE_GALLERY'); ?></td>
 <td><?php echo $kind==='album'?(int)$item->item_count:Text::_($item->type==='image'?'COM_DHARMAGALLERY_IMAGE':'COM_DHARMAGALLERY_DOCUMENT'); ?></td>
 <td><?php echo $this->escape($item->access_title); ?></td><td><?php echo (int)$item->id; ?></td></tr>
