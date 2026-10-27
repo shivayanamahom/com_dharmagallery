@@ -7,6 +7,7 @@ final class MediaHelper
  public const TYPES = [
   'jpg'=>['image/jpeg'], 'jpeg'=>['image/jpeg'], 'png'=>['image/png'], 'webp'=>['image/webp'], 'gif'=>['image/gif'],
   'pdf'=>['application/pdf'], 'txt'=>['text/plain'], 'csv'=>['text/plain','text/csv','application/csv'],
+  'rtf'=>['application/rtf','text/rtf','application/x-rtf'],
   'doc'=>['application/msword','application/x-ole-storage','application/CDFV2'],
   'xls'=>['application/vnd.ms-excel','application/x-ole-storage','application/CDFV2'],
   'ppt'=>['application/vnd.ms-powerpoint','application/x-ole-storage','application/CDFV2'],
@@ -72,6 +73,7 @@ final class MediaHelper
  {
   $real=self::absolute($path); $ext=strtolower(pathinfo($path,PATHINFO_EXTENSION)); $mime=(new \finfo(FILEINFO_MIME_TYPE))->file($real);
   if (!in_array($mime,self::TYPES[$ext],true)) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
+  if ($ext === 'rtf' && !preg_match('/^\s*\{\\\\rtf[0-9]/', (string) file_get_contents($real, false, null, 0, 64))) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
   if (in_array($ext,['docx','xlsx','pptx','odt','ods','odp'],true)) {
    $zip=new \ZipArchive(); if ($zip->open($real)!==true) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
    $entry=match($ext) {'docx'=>'word/document.xml','xlsx'=>'xl/workbook.xml','pptx'=>'ppt/presentation.xml',default=>'mimetype'};
