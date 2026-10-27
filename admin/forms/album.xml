@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form addfieldprefix="Dharma\Component\Gallery\Administrator\Field">
+ <fieldset name="basic">
+  <field name="id" type="hidden" />
+  <field name="title" type="text" label="JGLOBAL_TITLE" required="true" maxlength="255" />
+  <field name="alias" type="text" label="JFIELD_ALIAS_LABEL" maxlength="255" />
+  <field name="description" type="editor" label="JGLOBAL_DESCRIPTION" filter="Joomla\CMS\Component\ComponentHelper::filterText" buttons="true" />
+ </fieldset>
+ <fieldset name="sidebar">
+  <field name="mode" type="list" label="COM_DHARMAGALLERY_MODE" description="COM_DHARMAGALLERY_MODE_DESC" default="gallery" layout="joomla.form.field.list-fancy-select"><option value="gallery">COM_DHARMAGALLERY_MODE_GALLERY</option><option value="files">COM_DHARMAGALLERY_MODE_FILES</option></field>
+  <field name="parent_id" type="albumparent" label="COM_DHARMAGALLERY_PARENT" default="0" layout="joomla.form.field.list-fancy-select"><option value="0">COM_DHARMAGALLERY_NO_PARENT</option></field>
+  <field name="published" type="list" label="JSTATUS" default="1"><option value="1">JPUBLISHED</option><option value="0">JUNPUBLISHED</option><option value="2">JARCHIVED</option><option value="-2">JTRASHED</option></field>
+  <field name="access" type="accesslevel" label="JFIELD_ACCESS_LABEL" default="1" />
+  <field name="cover" type="media" label="COM_DHARMAGALLERY_COVER" types="images" preview="tooltip" />
+  <field name="language" type="contentlanguage" label="JFIELD_LANGUAGE_LABEL" default="*"><option value="*">JALL</option></field>
+  <field name="ordering" type="number" label="JFIELD_ORDERING_LABEL" default="0" min="0" />
+  <field name="metadesc" type="textarea" label="JFIELD_META_DESCRIPTION_LABEL" maxlength="1024" rows="3" />
+ </fieldset>
+ <fieldset name="contents">
+  <field name="mediaitems" type="albumcontents" label="COM_DHARMAGALLERY_CONTENTS" hiddenLabel="true" multiple="true" min="0" max="100" layout="joomla.form.field.subform.repeatable" buttons="add,remove,move" groupByFieldset="false" validate="Subform" />
+ </fieldset>
+ <fields name="params">
+  <fieldset name="display" label="COM_DHARMAGALLERY_SETTINGS">
+   <field name="columns" type="list" label="COM_DHARMAGALLERY_COLUMNS" default="3" showon=".mode:gallery"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></field>
+   <field name="image_mode" type="list" label="COM_DHARMAGALLERY_IMAGE_MODE" default="natural" showon=".mode:gallery"><option value="natural">COM_DHARMAGALLERY_NATURAL</option><option value="cover">COM_DHARMAGALLERY_CROP</option></field>
+   <field name="show_title" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_TITLES" default="1" showon=".mode:gallery"><option value="0">JNO</option><option value="1">JYES</option></field>
+   <field name="lightbox" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_LIGHTBOX" default="1" showon=".mode:gallery"><option value="0">JNO</option><option value="1">JYES</option></field>
+   <field name="files_layout" type="list" label="COM_DHARMAGALLERY_FILES_LAYOUT" default="list" showon=".mode:files"><option value="list">COM_DHARMAGALLERY_LIST</option><option value="grid">COM_DHARMAGALLERY_GRID</option></field>
+   <field name="show_size" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_SIZE" default="1" showon=".mode:files"><option value="0">JNO</option><option value="1">JYES</option></field>
+   <field name="show_extension" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_EXTENSION" default="1" showon=".mode:files"><option value="0">JNO</option><option value="1">JYES</option></field>
+   <field name="download" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_DOWNLOAD_ACTION" default="1" showon=".mode:files"><option value="0">COM_DHARMAGALLERY_OPEN</option><option value="1">COM_DHARMAGALLERY_DOWNLOAD</option></field>
+  </fieldset>
+ </fields>
+ <fieldset name="permissions"><field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" component="com_dharmagallery" section="album" filter="rules" validate="rules" /></fieldset>
+ <fieldset name="control"><field name="mediaitems_complete" type="hidden" default="1" filter="integer" /></fieldset>
+</form>

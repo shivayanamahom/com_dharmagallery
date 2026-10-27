@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" method="upgrade">
+ <name>com_dharmagallery</name><author>Domanov Maxim (web design dharma)</author>
+ <authorUrl>https://github.com/shivayanamahom</authorUrl><creationDate>October 2026</creationDate>
+ <version>2.0.1</version><description>COM_DHARMAGALLERY_XML_DESCRIPTION</description>
+ <license>GNU General Public License version 2 or later</license>
+ <namespace path="src">Dharma\Component\Gallery</namespace><scriptfile>script.php</scriptfile>
+ <install><sql><file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file></sql></install>
+ <update><schemas><schemapath type="mysql">sql/updates/mysql</schemapath></schemas></update>
+ <files folder="site"><folder>services</folder><folder>src</folder><folder>tmpl</folder><folder>layouts</folder></files>
+ <languages folder="admin/language"><language tag="ru-RU">ru-RU/com_dharmagallery.ini</language><language tag="en-GB">en-GB/com_dharmagallery.ini</language></languages>
+ <media destination="com_dharmagallery" folder="media"><filename>joomla.asset.json</filename><folder>js</folder></media>
+ <administration>
+  <menu img="class:images">COM_DHARMAGALLERY</menu>
+  <submenu><menu link="option=com_dharmagallery&amp;view=albums">COM_DHARMAGALLERY_ALBUMS</menu><menu link="option=com_config&amp;view=component&amp;component=com_dharmagallery">COM_DHARMAGALLERY_SETTINGS</menu></submenu>
+  <languages folder="admin/language"><language tag="ru-RU">ru-RU/com_dharmagallery.ini</language><language tag="ru-RU">ru-RU/com_dharmagallery.sys.ini</language><language tag="en-GB">en-GB/com_dharmagallery.ini</language><language tag="en-GB">en-GB/com_dharmagallery.sys.ini</language></languages>
+  <files folder="admin"><folder>forms</folder><folder>services</folder><folder>src</folder><folder>sql</folder><folder>tmpl</folder><filename>access.xml</filename><filename>config.xml</filename></files>
+ </administration>
+ <updateservers><server type="extension" priority="1" name="Dharma Gallery Updates">https://raw.githubusercontent.com/shivayanamahom/com_dharmagallery/main/updates.xml</server></updateservers>
+</extension>

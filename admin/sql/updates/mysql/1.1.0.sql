@@ -1,0 +1,1 @@
+-- Baseline for the original schema. No destructive operations.

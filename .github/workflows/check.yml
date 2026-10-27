@@ -1,0 +1,20 @@
+name: Validate and build manually
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: zip, gd, fileinfo, simplexml
+      - run: php tools/check.php
+      - run: php tests/run.php
+      - run: php tools/build.php
+      - uses: actions/upload-artifact@v4
+        with:
+          name: com_dharmagallery-testing
+          path: dist/*

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+ <fieldset name="common" label="COM_DHARMAGALLERY_GENERAL">
+  <field name="upload_maxsize" type="number" label="COM_DHARMAGALLERY_MAXSIZE" description="COM_DHARMAGALLERY_MAXSIZE_DESC" default="20" min="1" max="100" />
+  <field name="max_items" type="number" label="COM_DHARMAGALLERY_MAX_ITEMS" default="100" min="1" max="300" />
+  <field name="albums_per_page" type="number" label="COM_DHARMAGALLERY_ALBUMS_LIMIT" default="12" min="1" max="100" />
+  <field name="items_per_page" type="number" label="COM_DHARMAGALLERY_ITEMS_LIMIT" default="24" min="1" max="100" />
+ </fieldset>
+ <fieldset name="images" label="COM_DHARMAGALLERY_IMAGE_PROCESSING">
+  <field name="convert_webp" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_WEBP" description="COM_DHARMAGALLERY_WEBP_DESC" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
+  <field name="image_quality" type="number" label="COM_DHARMAGALLERY_QUALITY" default="82" min="30" max="100" />
+  <field name="max_image_width" type="number" label="COM_DHARMAGALLERY_MAX_IMAGE_WIDTH" default="1920" min="320" max="4096" />
+  <field name="max_image_height" type="number" label="COM_DHARMAGALLERY_MAX_IMAGE_HEIGHT" default="1920" min="320" max="4096" />
+  <field name="thumb_width" type="number" label="COM_DHARMAGALLERY_THUMB_WIDTH" default="640" min="160" max="2048" />
+  <field name="thumb_height" type="number" label="COM_DHARMAGALLERY_THUMB_HEIGHT" default="480" min="120" max="2048" />
+ </fieldset>
+ <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL"><field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" component="com_dharmagallery" section="component" filter="rules" validate="rules" /></fieldset>
+</config>

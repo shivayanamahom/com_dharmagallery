@@ -1,0 +1,34 @@
+{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "com_dharmagallery",
+  "version": "2.0.1",
+  "assets": [
+    {
+      "name": "com_dharmagallery.upload",
+      "type": "script",
+      "uri": "com_dharmagallery/upload.js",
+      "dependencies": [
+        "core",
+        "webcomponent.field-subform",
+        "webcomponent.field-media"
+      ],
+      "attributes": {
+        "defer": true
+      },
+      "version": "2.0.1"
+    },
+    {
+      "name": "com_dharmagallery.lightbox",
+      "type": "script",
+      "uri": "com_dharmagallery/lightbox.js",
+      "dependencies": [
+        "core",
+        "bootstrap.modal"
+      ],
+      "attributes": {
+        "defer": true
+      },
+      "version": "2.0.1"
+    }
+  ]
+}
