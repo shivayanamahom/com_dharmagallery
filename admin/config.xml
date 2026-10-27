@@ -7,6 +7,7 @@
   <field name="allowed_file_extensions" type="text" label="COM_DHARMAGALLERY_ALLOWED_EXTENSIONS" description="COM_DHARMAGALLERY_ALLOWED_EXTENSIONS_DESC" default="jpg,jpeg,png,webp,gif,pdf,txt,csv,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp" required="true" validate="extensions" message="COM_DHARMAGALLERY_INVALID_EXTENSIONS" />
   <field name="upload_maxsize" type="number" label="COM_DHARMAGALLERY_MAXSIZE" description="COM_DHARMAGALLERY_MAXSIZE_DESC" default="20" min="1" max="100" />
   <field name="max_items" type="number" label="COM_DHARMAGALLERY_MAX_ITEMS" default="100" min="1" max="300" />
+  <field name="show_title" type="radio" layout="joomla.form.field.radio.switcher" label="COM_DHARMAGALLERY_SHOW_TITLES" description="COM_DHARMAGALLERY_SHOW_TITLES_GLOBAL_DESC" default="1"><option value="0">JNO</option><option value="1">JYES</option></field>
   <field name="albums_per_page" type="number" label="COM_DHARMAGALLERY_ALBUMS_LIMIT" default="12" min="1" max="100" />
   <field name="items_per_page" type="number" label="COM_DHARMAGALLERY_ITEMS_LIMIT" default="24" min="1" max="100" />
  </fieldset>

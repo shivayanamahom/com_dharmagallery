@@ -90,6 +90,14 @@ final class GalleryHelper
  public static function columns($params): int { $v=(int)($params['columns']??0); return in_array($v,[2,3,4,6],true)?$v:(int)ComponentHelper::getParams('com_dharmagallery')->get('columns',3); }
 
 
+ /** Пустое значение альбома наследует общий переключатель; 0 и 1 переопределяют его. */
+ public static function showPhotoTitles(array $params): bool
+ {
+     $value = $params['show_title'] ?? '';
+     if ($value === '') { $value = ComponentHelper::getParams('com_dharmagallery')->get('show_title', 1); }
+     return (int) $value === 1;
+ }
+
  /** Выбранная обложка либо первое опубликованное и доступное фото самого альбома. */
  public static function cover(object $album): ?array
  {
