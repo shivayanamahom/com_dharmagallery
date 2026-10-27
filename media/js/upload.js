@@ -33,18 +33,31 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const append = async data => {
             await waitFor('joomla-field-subform');
+            await waitFor('joomla-field-media');
             const rows = subform.getRows();
             const row = subform.addRow(rows.length ? rows[rows.length - 1] : null);
             if (!row) throw new Error(text('TOO_MANY_FILES'));
             const field = row.querySelector('[name$="[path]"]');
-            field.value = data.path;
+            const media = row.querySelector('joomla-field-media');
+            // Файл уже прошёл проверку MIME и содержимого на сервере компонента.
+            // Сначала передаём его через API медиаполя: raw change до setValue()
+            // запускает асинхронную проверку Joomla, которая отвергает DOCX/XLSX.
+            if (media && typeof media.setValue === 'function') {
+                try { media.setValue(data.path); }
+                catch (error) {
+                    // В новых строках глобальные данные media picker могут быть ещё не созданы.
+                    media.validatedUrl = data.path;
+                    field.value = data.path;
+                }
+                media.mimeType = data.mime || '';
+                if (typeof media.markValid === 'function') media.markValid();
+            } else {
+                field.value = data.path;
+            }
             field.dispatchEvent(new Event('change', {bubbles: true}));
             const title = row.querySelector('[name$="[title]"]');
             if (title) { title.value = data.title; title.dispatchEvent(new Event('change', {bubbles: true})); }
             refresh(row);
-            // Используем API ядра только для синхронизации медиаполя, после появления редактируемой карточки.
-            const media = row.querySelector('joomla-field-media');
-            if (media) { waitFor('joomla-field-media').then(() => { try { media.setValue(data.path); } catch (error) {} }).catch(() => {}); }
         };
         root.addEventListener('change', event => {
             if (event.target.matches('[name$="[path]"]')) refresh(event.target.closest('.subform-repeatable-group'));

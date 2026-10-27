@@ -2,7 +2,7 @@
 <extension type="component" method="upgrade">
  <name>com_dharmagallery</name><author>Domanov Maxim (web design dharma)</author>
  <authorUrl>https://github.com/shivayanamahom</authorUrl><creationDate>October 2026</creationDate>
- <version>2.0.3</version><description>COM_DHARMAGALLERY_XML_DESCRIPTION</description>
+ <version>2.0.4</version><description>COM_DHARMAGALLERY_XML_DESCRIPTION</description>
  <license>GNU General Public License version 2 or later</license>
  <namespace path="src">Dharma\Component\Gallery</namespace><scriptfile>script.php</scriptfile>
  <install><sql><file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file></sql></install>
