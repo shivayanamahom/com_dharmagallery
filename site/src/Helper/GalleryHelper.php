@@ -32,6 +32,39 @@ final class GalleryHelper
  public static function route(string $view,int $id=0): string { return Route::_('index.php?option=com_dharmagallery&view='.$view.($id?'&id='.$id:'')); }
  public static function columns($params): int { $v=(int)($params['columns']??0); return in_array($v,[2,3,4,6],true)?$v:(int)ComponentHelper::getParams('com_dharmagallery')->get('columns',3); }
 
+
+ /** Выбранная обложка либо первое опубликованное и доступное фото самого альбома. */
+ public static function cover(object $album): ?array
+ {
+     if (!self::visibleAlbum((int) $album->id)) { return null; }
+     $explicit = trim((string) ($album->cover ?? ''));
+     if ($explicit !== '') {
+         try {
+             $absolute = MediaHelper::absolute($explicit);
+             $size = @getimagesize($absolute);
+             if ($size) { return ['thumb' => MediaHelper::url($explicit), 'width' => $size[0], 'height' => $size[1]]; }
+         } catch (\Throwable $e) {}
+     }
+     // Модель списка получает первое фото тем же запросом, без отдельного запроса для каждой карточки.
+     if (property_exists($album, 'first_photo_id')) {
+         if (!(int) $album->first_photo_id) { return null; }
+         $photo = (object) [
+             'path' => $album->first_photo_path,
+             'album_id' => (int) $album->id,
+             'filename' => $album->first_photo_filename,
+             'type' => 'image',
+         ];
+     } else {
+         // Поддержка вызова переопределяемого макета без модели списка.
+         $db = self::db();
+         $query = $db->getQuery(true)->select('*')->from('#__dharmagallery_photos')
+             ->where('album_id=' . (int) $album->id)->where("type='image'")
+             ->where('published=1')->where('access IN (' . self::levels() . ')')
+             ->order('ordering ASC')->order('id ASC');
+         $photo = $db->setQuery($query, 0, 1)->loadObject();
+     }
+     return $photo ? self::media($photo) : null;
+ }
  public static function media(object $item, bool $optimize = true): ?array
  {
      try {
