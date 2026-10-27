@@ -12,11 +12,12 @@ HTMLHelper::_('behavior.keepalive');
 $user = Factory::getApplication()->getIdentity();
 $id = (int) $this->item->id;
 $mode = $this->item->mode ?? 'gallery';
+$extensions = MediaHelper::allowedExtensions($mode);
 $canCreate = $user->authorise('core.create', MediaHelper::asset($id));
 $wa = $this->getDocument()->getWebAssetManager();
 $wa->getRegistry()->addExtensionRegistryFile('com_dharmagallery');
 $wa->useStyle('com_dharmagallery.admin')->useScript('com_dharmagallery.upload');
-foreach (['UPLOADING', 'UPLOAD_DONE', 'UPLOAD_FAILED', 'SAVE_CONTENTS', 'TOO_MANY_FILES', 'UPLOAD_SELECT'] as $key) { Text::script('COM_DHARMAGALLERY_' . $key); }
+foreach (['UPLOADING', 'UPLOAD_DONE', 'UPLOAD_FAILED', 'SAVE_CONTENTS', 'TOO_MANY_FILES', 'UPLOAD_SELECT', 'EXTENSION_NOT_ALLOWED'] as $key) { Text::script('COM_DHARMAGALLERY_' . $key); }
 ?>
 <form action="<?php echo Route::_('index.php?option=com_dharmagallery&view=album&layout=edit&id=' . $id); ?>" method="post" name="adminForm" id="adminForm" class="form-validate">
 <?php echo LayoutHelper::render('joomla.edit.title_alias', $this); ?>
@@ -31,13 +32,13 @@ foreach (['UPLOADING', 'UPLOAD_DONE', 'UPLOAD_FAILED', 'SAVE_CONTENTS', 'TOO_MAN
    <?php if (!$id): ?>
     <div class="alert alert-info"><?php echo Text::_('COM_DHARMAGALLERY_SAVE_FIRST'); ?></div>
    <?php else: ?>
-    <section data-dg-contents data-album="<?php echo $id; ?>" data-mode="<?php echo $this->escape($mode); ?>" data-url="<?php echo Route::_('index.php?option=com_dharmagallery&task=album.upload&format=json', false); ?>" data-token="<?php echo Session::getFormToken(); ?>">
+    <section data-dg-contents data-album="<?php echo $id; ?>" data-mode="<?php echo $this->escape($mode); ?>" data-extensions="<?php echo $this->escape(implode(',', $extensions)); ?>" data-url="<?php echo Route::_('index.php?option=com_dharmagallery&task=album.upload&format=json', false); ?>" data-token="<?php echo Session::getFormToken(); ?>">
      <?php if ($canCreate): ?>
       <div class="dg-upload-panel d-flex flex-wrap align-items-center gap-3 p-3 mb-3" data-dg-drop>
        <span class="icon-<?php echo $mode === 'gallery' ? 'images' : 'file'; ?> fs-3 text-muted" aria-hidden="true"></span>
        <div class="flex-grow-1"><strong><?php echo Text::_('COM_DHARMAGALLERY_DROP_FILES'); ?></strong><p class="small text-muted mb-0"><?php echo Text::_('COM_DHARMAGALLERY_UPLOAD_HELP'); ?></p></div>
-       <button type="button" class="btn btn-primary" data-dg-start><span class="icon-upload" aria-hidden="true"></span> <?php echo Text::_('COM_DHARMAGALLERY_UPLOAD_SELECT'); ?></button>
-       <input data-dg-files type="file" multiple accept="<?php echo $mode === 'gallery' ? '.jpg,.jpeg,.png,.webp,.gif' : '.' . implode(',.', array_keys(MediaHelper::TYPES)); ?>" aria-label="<?php echo Text::_('COM_DHARMAGALLERY_SELECT_FILES'); ?>">
+       <button type="button" class="btn btn-primary" data-dg-start<?php echo $extensions ? '' : ' disabled'; ?>><span class="icon-upload" aria-hidden="true"></span> <?php echo Text::_('COM_DHARMAGALLERY_UPLOAD_SELECT'); ?></button>
+       <input data-dg-files type="file" multiple accept="<?php echo $this->escape('.' . implode(',.', $extensions)); ?>" aria-label="<?php echo Text::_('COM_DHARMAGALLERY_SELECT_FILES'); ?>">
       </div>
       <p class="small mb-2" role="status" aria-live="polite" data-dg-status></p><ul class="small mb-2" data-dg-results></ul>
      <?php endif; ?>

@@ -34,6 +34,7 @@ final class AlbumContentsService
             if ($path === '' && !$id) { continue; }
             if (!$id && !$canCreate) { throw new \RuntimeException('JERROR_ALERTNOAUTHOR'); }
             $path = MediaHelper::path($path);
+            if (!$id || $original[$id]->path !== $path) { MediaHelper::assertAllowed($path, $mode); }
             $meta = MediaHelper::metadata($path);
             if ($mode === 'gallery' && $meta['type'] !== 'image') { throw new \InvalidArgumentException('COM_DHARMAGALLERY_IMAGES_ONLY'); }
             if ($id) { $seen[$id] = true; if ($original[$id]->path !== $path) { $obsolete[] = $original[$id]->path; } }

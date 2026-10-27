@@ -17,11 +17,47 @@ final class MediaHelper
   'ods'=>['application/vnd.oasis.opendocument.spreadsheet','application/zip'],
   'odp'=>['application/vnd.oasis.opendocument.presentation','application/zip'],
  ];
+
+ public static function parseExtensions(string $list): array
+ {
+     $extensions = [];
+     foreach (preg_split('/[\s,;]+/u', strtolower(trim($list)), -1, PREG_SPLIT_NO_EMPTY) ?: [] as $value) {
+         $extension = ltrim($value, '.');
+         if (!isset(self::TYPES[$extension])) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_EXTENSIONS'); }
+         $extensions[$extension] = $extension;
+     }
+     return array_values($extensions);
+ }
+ public static function allowedExtensions(string $mode = 'files'): array
+ {
+     $value = (string) \Joomla\CMS\Component\ComponentHelper::getParams('com_dharmagallery')->get('allowed_file_extensions', implode(',', array_keys(self::TYPES)));
+     $extensions = self::parseExtensions($value);
+     return $mode === 'gallery' ? array_values(array_intersect($extensions, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) : $extensions;
+ }
+ public static function assertAllowed(string $path, string $mode): void
+ {
+     if (!in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::allowedExtensions($mode), true)) {
+         throw new \InvalidArgumentException('COM_DHARMAGALLERY_EXTENSION_NOT_ALLOWED');
+     }
+ }
+ /** Читаемое имя: кириллица и пробелы сохраняются, служебные символы нормализуются. */
+ public static function uploadName(string $original): array
+ {
+     if (!mb_check_encoding($original, 'UTF-8') || preg_match('/[\x00-\x1F\x7F]/', $original)) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_FILENAME'); }
+     $original = basename(str_replace('\\', '/', $original));
+     if (class_exists(\Normalizer::class)) { $original = \Normalizer::normalize($original, \Normalizer::FORM_C) ?: $original; }
+     $extension = strtolower(pathinfo($original, PATHINFO_EXTENSION));
+     if (!isset(self::TYPES[$extension])) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
+     $stem = preg_replace('/\p{Z}/u', ' ', pathinfo($original, PATHINFO_FILENAME));
+     $stem = preg_replace('/[^\p{L}\p{M}\p{N} №_.,()+@-]/u', '_', $stem);
+     $stem = trim(mb_strcut($stem, 0, 180, 'UTF-8'), ' .');
+     return [$stem !== '' ? $stem : 'Файл', $extension];
+ }
  public static function path(string $path): string
  {
   $path = explode('#', trim($path), 2)[0];
   $path = preg_replace('#^local-images:/+#', 'images/', $path);
-  if (!preg_match('#^images/[\p{L}\p{N} _.,()+@/\-]+$#u', $path) || strlen($path)>1024) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_PATH'); }
+  if (!preg_match('#^images/[\p{L}\p{M}\p{N} №_.,()+@/\-]+$#u', $path) || strlen($path)>1024) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_PATH'); }
   foreach (explode('/', $path) as $part) { if ($part==='' || $part==='.' || $part==='..' || $part[0]==='.') { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_PATH'); } }
   if (!isset(self::TYPES[strtolower(pathinfo($path, PATHINFO_EXTENSION))])) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
   return $path;

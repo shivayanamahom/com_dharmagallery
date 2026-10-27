@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const subform = root.querySelector('joomla-field-subform');
         if (!subform) return;
         let busy = false;
+        const extensions = (root.dataset.extensions || '').split(',').filter(Boolean);
         const text = key => Joomla.Text._(`COM_DHARMAGALLERY_${key}`);
         const waitFor = name => Promise.race([
             customElements.whenDefined(name),
@@ -80,6 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     status.textContent = `${text('UPLOADING')} ${index + 1}/${files.length}`;
                     const line = document.createElement('li'); line.textContent = file.name; results.append(line);
                     try {
+                        const extension = file.name.split('.').pop()?.toLowerCase();
+                        if (!extensions.includes(extension)) throw new Error(text('EXTENSION_NOT_ALLOWED'));
                         const body = new FormData();
                         body.append('album_id', root.dataset.album); body.append('file', file); body.append(root.dataset.token, '1');
                         const response = await fetch(root.dataset.url, {method: 'POST', body, credentials: 'same-origin', headers: {Accept: 'application/json'}});
