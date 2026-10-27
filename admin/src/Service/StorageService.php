@@ -57,9 +57,16 @@ final class StorageService
         $withFragment = $this->db->quote($this->db->escape($path, true) . '#%', false);
         if ($this->db->setQuery('SELECT COUNT(*) FROM #__dharmagallery_albums WHERE cover=' . $q . ' OR cover LIKE ' . $withFragment)->loadResult()) { return true; }
         // Ссылки в материалах, полях и модулях Joomla также сохраняют оригинал.
-        foreach ([['#__content', "CONCAT_WS(' ',introtext,fulltext,images)"], ['#__fields_values', 'value'], ['#__modules', "CONCAT_WS(' ',content,params)"]] as [$table, $column]) {
+        foreach ([
+            ['#__dharmagallery_albums', ['introtext', 'description', 'params']],
+            ['#__content', ['introtext', 'fulltext', 'images']],
+            ['#__fields_values', ['value']],
+            ['#__modules', ['content', 'params']],
+        ] as [$table, $columns]) {
+            $column = "CONCAT_WS(' '," . implode(',', array_map([$this->db, 'quoteName'], $columns)) . ')';
             $conditions = [];
-            foreach (array_unique([$path, str_replace('/', '\\/', $path)]) as $variant) {
+            $encoded = implode('/', array_map('rawurlencode', explode('/', $path)));
+            foreach (array_unique([$path, $encoded, str_replace('/', '\\/', $path), str_replace('/', '\\/', $encoded), substr(json_encode($path), 1, -1)]) as $variant) {
                 $conditions[] = $column . ' LIKE ' . $this->db->quote('%' . $this->db->escape($variant, true) . '%', false);
             }
             if ($this->db->setQuery('SELECT COUNT(*) FROM ' . $table . ' WHERE (' . implode(' OR ', $conditions) . ')')->loadResult()) { return true; }

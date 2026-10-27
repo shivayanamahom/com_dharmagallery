@@ -5,9 +5,23 @@ foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,File
  if ($file->getExtension()==='php') { $count++; exec(escapeshellarg(PHP_BINARY).' -l '.escapeshellarg($file->getPathname()).' 2>&1',$out,$code); if ($code) $errors[]=implode("\n",$out); $out=[]; }
  if ($file->getExtension()==='xml' && simplexml_load_file($file->getPathname())===false) $errors[]='Invalid XML: '.$file;
 }
+$manifest=simplexml_load_file($root.'/dharmagallery.xml');
 $wa=json_decode(file_get_contents($root.'/media/joomla.asset.json'),true,512,JSON_THROW_ON_ERROR);
-if ($wa['version']!==(string)simplexml_load_file($root.'/dharmagallery.xml')->version) $errors[]='Asset version mismatch';
-$ru=parse_ini_file($root.'/admin/language/ru-RU/com_dharmagallery.ini'); $en=parse_ini_file($root.'/admin/language/en-GB/com_dharmagallery.ini');
-if (array_keys($ru)!==array_keys($en)) $errors[]='Language keys differ';
-if (count(simplexml_load_file($root.'/updates.xml')->update)) $errors[]='Do not advertise unreleased versions';
+if ($wa['version']!==(string)$manifest->version) $errors[]='Asset version mismatch';
+foreach (['com_dharmagallery.ini','com_dharmagallery.sys.ini'] as $file) {
+ $ru=parse_ini_file($root.'/admin/language/ru-RU/'.$file); $en=parse_ini_file($root.'/admin/language/en-GB/'.$file);
+ if (!$ru || !$en || array_keys($ru)!==array_keys($en)) $errors[]='Language keys differ: '.$file;
+}
+$feed=simplexml_load_file($root.'/updates.xml');
+foreach ($feed->update as $update) {
+ $version=(string)$update->version;
+ $url='https://github.com/shivayanamahom/com_dharmagallery/releases/download/v'.$version.'/com_dharmagallery-'.$version.'.zip';
+ if ((string)$update->element!=='com_dharmagallery' || (string)$update->type!=='component') $errors[]='Invalid update extension';
+ if (!preg_match('/^\d+\.\d+\.\d+$/',$version) || version_compare($version,(string)$manifest->version,'>')) $errors[]='Invalid update version';
+ if ((string)$update->downloads->downloadurl!==$url) $errors[]='Invalid update download URL';
+ if (!preg_match('/^[a-f0-9]{64}$/',(string)$update->sha256)) $errors[]='Invalid SHA-256';
+ if ((string)$update->targetplatform['name']!=='joomla' || (string)$update->php_minimum!=='8.3.0') $errors[]='Missing update platform requirements';
+ $archive=$root.'/dist/com_dharmagallery-'.$version.'.zip';
+ if (is_file($archive) && hash_file('sha256',$archive)!==(string)$update->sha256) $errors[]='Archive/feed SHA-256 mismatch';
+}
 echo 'Checked PHP files: '.$count."\n"; foreach ($errors as $error) echo $error."\n"; echo count($errors)." errors\n"; exit($errors?1:0);

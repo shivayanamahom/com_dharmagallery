@@ -1,3 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Releases are deliberately not published yet. -->
-<updates />
+<updates>
+ <update>
+  <name>Dharma Gallery</name>
+  <description>Вложенные альбомы фотографий и документов для Joomla 6</description>
+  <element>com_dharmagallery</element>
+  <type>component</type>
+  <version>2.0.5</version>
+  <infourl title="Dharma Gallery 2.0.5">https://github.com/shivayanamahom/com_dharmagallery/releases/tag/v2.0.5</infourl>
+  <downloads><downloadurl type="full" format="zip">https://github.com/shivayanamahom/com_dharmagallery/releases/download/v2.0.5/com_dharmagallery-2.0.5.zip</downloadurl></downloads>
+  <sha256>10d2858f232ad4fd1422f3b3fd4e0dfa9cedbee7c3c93d752d824cfa7d9b6936</sha256>
+  <maintainer>Dharma Design</maintainer>
+  <maintainerurl>https://github.com/shivayanamahom</maintainerurl>
+  <targetplatform name="joomla" version="6\..*" />
+  <php_minimum>8.3.0</php_minimum>
+ </update>
+</updates>
