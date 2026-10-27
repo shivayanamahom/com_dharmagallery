@@ -46,6 +46,7 @@ class Router extends RouterView
 
 	public function getAlbumSegment($id, $query)
 	{
+		$id = (int) $id;
 		$dbQuery = $this->db->getQuery(true)
 			->select($this->db->quoteName('alias'))
 			->from($this->db->quoteName('#__dharmagallery_albums'))
@@ -54,13 +55,13 @@ class Router extends RouterView
 		$this->db->setQuery($dbQuery);
 		$alias = (string) $this->db->loadResult();
 
-		return [(int) $id => (int)$id . ':' . $alias];
+		return [$id => $alias !== '' ? $alias : (string) $id];
 	}
 
 	public function getAlbumId($segment, $query)
 	{
-		if (preg_match('/^(\d+)[:\-]/', $segment, $match)) { return (int)$match[1]; }
-        $dbQuery = $this->db->getQuery(true)
+		// Сначала точный алиас: названия вроде «2026-nashi-raboty» не являются ID.
+		$dbQuery = $this->db->getQuery(true)
 			->select($this->db->quoteName('id'))
 			->from($this->db->quoteName('#__dharmagallery_albums'))
 			->where($this->db->quoteName('alias') . ' = :alias')
@@ -74,6 +75,8 @@ class Router extends RouterView
 			return $id;
 		}
 
+		// Совместимость с ранее созданными ссылками «6-alias» и «6:alias».
+		if (preg_match('/^(\d+)[:\-]/', $segment, $match)) { return (int) $match[1]; }
 		return ctype_digit($segment) ? (int) $segment : false;
 	}
 
