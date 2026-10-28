@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="content" method="upgrade">
+ <name>plg_content_dharmagallery</name>
+ <author>Domanov Maxim (web design dharma)</author>
+ <authorUrl>https://github.com/shivayanamahom</authorUrl>
+ <creationDate>October 2026</creationDate>
+ <copyright>(C) 2026 Domanov Maxim (web design dharma). All rights reserved.</copyright>
+ <license>GNU General Public License version 2 or later</license>
+ <version>2.1.0</version>
+ <description>PLG_CONTENT_DHARMAGALLERY_XML_DESCRIPTION</description>
+ <namespace path="src">Dharma\Plugin\Content\DharmaGallery</namespace>
+ <files>
+  <folder plugin="dharmagallery">services</folder>
+  <folder>src</folder>
+ </files>
+ <languages folder="language">
+  <language tag="ru-RU">ru-RU/plg_content_dharmagallery.ini</language>
+  <language tag="ru-RU">ru-RU/plg_content_dharmagallery.sys.ini</language>
+  <language tag="en-GB">en-GB/plg_content_dharmagallery.ini</language>
+  <language tag="en-GB">en-GB/plg_content_dharmagallery.sys.ini</language>
+ </languages>
+</extension>

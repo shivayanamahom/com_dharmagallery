@@ -2,7 +2,9 @@
 defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Installer\Installer;
 use Joomla\CMS\Installer\InstallerScript;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseInterface;
 use Dharma\Component\Gallery\Administrator\Service\StorageService;
@@ -12,6 +14,8 @@ final class Com_DharmagalleryInstallerScript extends InstallerScript
     protected $minimumJoomla = '6.0.0';
     public function postflight($type, $parent)
     {
+        // При удалении Joomla тоже вызывает postflight, но файлы компонента уже удалены: здесь делать нечего.
+        if ($type === 'uninstall') { return true; }
         $this->deleteFiles = [
             '/administrator/components/com_dharmagallery/src/Controller/ItemController.php',
             '/administrator/components/com_dharmagallery/src/Controller/ItemsController.php',
@@ -76,7 +80,58 @@ final class Com_DharmagalleryInstallerScript extends InstallerScript
                 $db->insertObject('#__dharmagallery_uploads', $record);
             }
         }
+        $this->installPlugins($parent);
         if (is_file(JPATH_ADMINISTRATOR . '/cache/autoload_psr4.php')) { unlink(JPATH_ADMINISTRATOR . '/cache/autoload_psr4.php'); }
         return true;
+    }
+
+    /** Плагины вставки: папка в архиве => [группа, элемент]. */
+    private const PLUGINS = [
+        'content/dharmagallery' => ['content', 'dharmagallery'],
+        'editors-xtd/dharmagallery' => ['editors-xtd', 'dharmagallery'],
+    ];
+
+    /**
+     * Ставит плагины из папки plugins архива. Новый плагин включается; у уже установленного состояние (включён или
+     * выключен администратором) не меняется, обновляются только файлы.
+     */
+    private function installPlugins($parent): void
+    {
+        $source = $parent->getParent()->getPath('source') . '/plugins';
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $app = Factory::getApplication();
+        foreach (self::PLUGINS as $directory => [$folder, $element]) {
+            $path = $source . '/' . $directory;
+            if (!is_dir($path)) { continue; }
+            $existing = $this->pluginId($db, $folder, $element);
+            $installer = new Installer();
+            $installer->setDatabase($db);
+            if (!$installer->install($path)) {
+                $app->enqueueMessage(Text::sprintf('COM_DHARMAGALLERY_PLUGIN_INSTALL_FAILED', $folder . '/' . $element), 'warning');
+                continue;
+            }
+            if (!$existing && ($id = $this->pluginId($db, $folder, $element))) {
+                $db->setQuery('UPDATE #__extensions SET enabled=1 WHERE extension_id=' . (int) $id)->execute();
+            }
+        }
+    }
+
+    /** При удалении компонента его плагины тоже удаляются: без компонента они не нужны. */
+    public function uninstall($parent)
+    {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        foreach (self::PLUGINS as [$folder, $element]) {
+            if ($id = $this->pluginId($db, $folder, $element)) {
+                $installer = new Installer();
+                $installer->setDatabase($db);
+                $installer->uninstall('plugin', $id);
+            }
+        }
+        return true;
+    }
+
+    private function pluginId($db, string $folder, string $element): int
+    {
+        return (int) $db->setQuery('SELECT extension_id FROM #__extensions WHERE type=' . $db->quote('plugin') . ' AND folder=' . $db->quote($folder) . ' AND element=' . $db->quote($element))->loadResult();
     }
 }

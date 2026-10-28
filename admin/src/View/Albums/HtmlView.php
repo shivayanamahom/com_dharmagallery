@@ -11,6 +11,8 @@ class HtmlView extends BaseHtmlView
  public function display($tpl=null) {
   $model=$this->getModel(); $this->items=$model->getItems(); $this->state=$model->getState(); $this->pagination=$model->getPagination(); $this->filterForm=$model->getFilterForm(); $this->activeFilters=$model->getActiveFilters();
   if ($errors=$model->getErrors()) { throw new \RuntimeException(implode("\n",$errors),500); }
+  // Окно выбора альбома для кнопки редактора открывается без панели кнопок.
+  if ($this->getLayout()==='modal') { return parent::display($tpl); }
   $user=Factory::getApplication()->getIdentity(); ToolbarHelper::title(Text::_('COM_DHARMAGALLERY_ALBUMS'),'images');
   if ($user->authorise('core.create','com_dharmagallery')) { ToolbarHelper::addNew('album.add'); }
   if ($user->authorise('core.edit.state','com_dharmagallery')) { ToolbarHelper::publish('albums.publish'); ToolbarHelper::unpublish('albums.unpublish'); ToolbarHelper::trash('albums.trash'); }

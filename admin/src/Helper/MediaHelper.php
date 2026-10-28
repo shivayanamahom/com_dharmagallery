@@ -75,7 +75,8 @@ final class MediaHelper
   if (!in_array($mime,self::TYPES[$ext],true)) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
   $rtfMime = in_array($mime, ['text/rtf','text/plain','application/rtf','application/x-rtf'], true);
   $rtfSignature = str_starts_with(ltrim((string) file_get_contents($real, false, null, 0, 64)), "{\\rtf");
-  if (($ext === 'rtf' || $rtfMime) && !$rtfSignature) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
+  // Сигнатура RTF обязательна для .rtf и для .doc, которые определились как RTF/текст; обычные .txt и .csv — тоже text/plain и её не имеют.
+  if (($ext === 'rtf' || ($ext === 'doc' && $rtfMime)) && !$rtfSignature) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
   if (in_array($ext,['docx','xlsx','pptx','odt','ods','odp'],true)) {
    $zip=new \ZipArchive(); if ($zip->open($real)!==true) { throw new \InvalidArgumentException('COM_DHARMAGALLERY_INVALID_TYPE'); }
    $entry=match($ext) {'docx'=>'word/document.xml','xlsx'=>'xl/workbook.xml','pptx'=>'ppt/presentation.xml',default=>'mimetype'};

@@ -26,4 +26,22 @@ $z=new ZipArchive();$z->open($fixture.'/images/fake.odt',ZipArchive::CREATE);$z-
 check('ODT mime mismatch',fn()=>rejects(fn()=>M::metadata('images/fake.odt')));
 if (extension_loaded('gd')) { $im=imagecreatetruecolor(20,10);imagejpeg($im,$fixture.'/images/test.jpg');check('image metadata',fn()=>M::metadata('images/test.jpg')['type']==='image'); }
 foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($fixture,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST) as $file) { if ($file->isDir()&&!$file->isLink()) rmdir($file); else unlink($file); } rmdir($fixture);
+require dirname(__DIR__).'/plugins/content/dharmagallery/src/Helper/Shortcode.php';
+use Dharma\Plugin\Content\DharmaGallery\Helper\Shortcode as S;
+check('shortcode id',fn()=>S::parse('id=5')==['id'=>5,'limit'=>0,'columns'=>0]);
+check('shortcode quoted values',fn()=>S::parse('id="7" limit=\'12\' columns=4')==['id'=>7,'limit'=>12,'columns'=>4]);
+check('shortcode limit capped',fn()=>S::parse('id=1 limit=9999')['limit']===100);
+check('shortcode invalid columns dropped',fn()=>S::parse('id=1 columns=5')['columns']===0);
+check('shortcode rejects non numeric id',fn()=>S::parse('id=abc')['id']===0 && S::parse('id=1;DROP')['id']===0);
+check('shortcode unknown attributes ignored',fn()=>S::parse('id=2 onclick=alert(1)')==['id'=>2,'limit'=>0,'columns'=>0]);
+$render=fn(array $a)=>'[A'.$a['id'].']';
+check('replace plain code',fn()=>S::replace('before {dharmagallery id=3} after',$render)==='before [A3] after');
+check('replace code alone in paragraph drops wrapper',fn()=>S::replace('<p>{dharmagallery id=3}</p>',$render)==='[A3]');
+check('replace paragraph with attributes and spaces',fn()=>S::replace("<p class=\"x\">\n {dharmagallery id=4 limit=8} \n</p>",$render)==='[A4]');
+check('replace code at start of paragraph',fn()=>S::replace('<p>{dharmagallery id=3} tail</p>',$render)==='[A3]<p> tail</p>');
+check('replace code at end of paragraph',fn()=>S::replace('<p>head {dharmagallery id=3}</p>',$render)==='<p>head </p>[A3]');
+check('replace several codes',fn()=>S::replace('{dharmagallery id=1}<p>{dharmagallery id=2}</p>',$render)==='[A1][A2]');
+check('replace is case insensitive',fn()=>S::replace('{DharmaGallery id=6}',$render)==='[A6]');
+check('strip removes codes',fn()=>S::strip('a <p>{dharmagallery id=1}</p> b')==='a  b');
+check('text without code untouched',fn()=>S::replace('<p>nothing {here}</p>',$render)==='<p>nothing {here}</p>' && !S::contains('x'));
 echo "$passed passed, $failed failed\n";exit($failed?1:0);
