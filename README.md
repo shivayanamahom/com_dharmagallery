@@ -15,7 +15,7 @@
 https://github.com/shivayanamahom/com_dharmagallery/releases/latest/download/com_dharmagallery.zip
 ```
 
-Также можно скачать версионный ZIP в [Releases](https://github.com/shivayanamahom/com_dharmagallery/releases). Новые версии появляются в **Система → Обновление → Расширения**. Текущая версия — **2.1.0**; [история изменений](CHANGELOG.md).
+Также можно скачать версионный ZIP в [Releases](https://github.com/shivayanamahom/com_dharmagallery/releases). Новые версии появляются в **Система → Обновление → Расширения**. Текущая версия — **2.1.1**; [история изменений](CHANGELOG.md).
 
 > Разработчикам: перед правками прочитайте [AGENTS.md](AGENTS.md).
 
@@ -99,7 +99,7 @@ php tests/run.php
 php tools/build.php
 ```
 
-Сборка создаёт `dist/com_dharmagallery-2.1.0.zip`, копию `com_dharmagallery.zip` для постоянной ссылки и контрольные суммы `SHA256SUMS.txt`. Проверки не создают теги и релизы; workflow запускается вручную.
+Сборка создаёт `dist/com_dharmagallery-2.1.1.zip`, копию `com_dharmagallery.zip` для постоянной ссылки и контрольные суммы `SHA256SUMS.txt`. Проверки не создают теги и релизы; workflow запускается вручную.
 
 Сервер обновлений: `https://raw.githubusercontent.com/shivayanamahom/com_dharmagallery/main/updates.xml`. Лента содержит версию, адрес установочного ZIP, SHA-256 и требования Joomla/PHP. Установка и обновление используют штатный менеджер Joomla.
 

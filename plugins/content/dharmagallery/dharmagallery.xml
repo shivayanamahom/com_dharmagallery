@@ -6,7 +6,7 @@
  <creationDate>October 2026</creationDate>
  <copyright>(C) 2026 Domanov Maxim (web design dharma). All rights reserved.</copyright>
  <license>GNU General Public License version 2 or later</license>
- <version>2.1.0</version>
+ <version>2.1.1</version>
  <description>PLG_CONTENT_DHARMAGALLERY_XML_DESCRIPTION</description>
  <namespace path="src">Dharma\Plugin\Content\DharmaGallery</namespace>
  <files>
